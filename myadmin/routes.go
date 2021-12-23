@@ -29,6 +29,7 @@ func AdminRoutes(app *fiber.App) {
 	admin := app.Group("/api/admin", adminMiddleware)
 	// shop category
 	admin.Post("/logout", AdminLogout)
+	admin.Get("/shop/categories/only/all", GetShopCategoryOnly)
 	admin.Get("/shop/categories/all", GetShopCategory)
 	admin.Get("/shop/categories/active", GetActiveShopCategory)
 	admin.Get("/shop/categories/:id", GetTargetShopCategory)
@@ -68,5 +69,12 @@ func AdminRoutes(app *fiber.App) {
 	admin.Put("/seller/shops/soft/delete/:id", SoftDeleteSellerShops)
 	admin.Delete("/seller/shops/permanent/delete/:id", PermanentDeleteSellerShops)
 	admin.Put("/seller/shops/recover/delete/:id", RecoverDeleteSellerShops)
+//	product brand
+	admin.Get("/product/brand/all",BrandAll)
+	admin.Post("/product/brand/create",BrandCreate)
+	admin.Put("/product/brand/update/:id",BrandEdit)
+	admin.Delete("/product/brand/soft/delete/:id",BrandSoftDelete)
+	admin.Delete("/product/brand/delete/:id",BrandDelete)
+	admin.Put("/product/brand/recover/:id",BrandRecoverDelete)
 
 }

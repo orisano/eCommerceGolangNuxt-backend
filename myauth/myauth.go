@@ -122,15 +122,15 @@ func UserRegister(c *fiber.Ctx) error {
 func UserLogin(c *fiber.Ctx) error {
 	body := new(requestLogin)
 	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).SendString("Wrong credentials.")
+		return c.Status(fiber.StatusUnprocessableEntity).SendString("Wrong entity.")
 	}
 	var user model.User
 	err := model.DB.Where(model.User{PhoneNumber: body.PhoneNumber}).First(&user)
 	if user.Admin {
-		return c.Status(fiber.StatusUnprocessableEntity).SendString("Wrong credentials.")
+		return c.Status(fiber.StatusBadRequest).SendString("Wrong credentials.")
 	}
 	if err.Error != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).SendString("Wrong credentials.")
+		return c.Status(fiber.StatusBadRequest).SendString("Wrong credentials.")
 	}
 	match := CheckPasswordHash(body.Password, user.Password)
 	if !match {

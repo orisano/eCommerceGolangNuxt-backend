@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/nfnt/resize"
+	"image"
+	"image/jpeg"
 	"log"
 	"math/rand"
 	"os"
@@ -21,7 +24,11 @@ func AdminLogout(c *fiber.Ctx) error {
 	c.Cookie(cookie)
 	return c.SendStatus(200)
 }
-
+func GetShopCategoryOnly(c *fiber.Ctx) error {
+	var shopCategories []model.ShopCategory
+	model.DB.Find(&shopCategories)
+	return c.JSON(shopCategories)
+}
 func GetShopCategory(c *fiber.Ctx) error {
 	var shopCategories []model.ShopCategory
 	var shopTrashCategories []model.ShopCategory
@@ -102,11 +109,19 @@ func CreateShopCategory(c *fiber.Ctx) error {
 			break
 		}
 	}
-	err = c.SaveFile(file, fmt.Sprintf("./public/images/%s", imageName))
-	if err != nil {
-		log.Println("image save error --> ", err)
+	img, _ := file.Open()
+	CusImage, _, errImg := image.Decode(img)
+	if errImg != nil {
+		return errImg
+	}
+	m := resize.Resize(945, 410, CusImage, resize.Lanczos3)
+	out, errCreate := os.Create(fmt.Sprintf("./public/images/%s", imageName))
+	if errCreate != nil {
 		return c.JSON(fiber.Map{"status": 500, "message": "Server error", "data": nil})
 	}
+	defer out.Close()
+	jpeg.Encode(out, m, nil)
+
 	category.Image = imageName
 
 	category.Slug = category.Name
@@ -156,7 +171,18 @@ func UpdateShopCategory(c *fiber.Ctx) error {
 				break
 			}
 		}
-		c.SaveFile(file, fmt.Sprintf("./public/images/%s", imageName))
+		img, _ := file.Open()
+		CusImage, _, errImg := image.Decode(img)
+		if errImg != nil {
+			return errImg
+		}
+		m := resize.Resize(945, 410, CusImage, resize.Lanczos3)
+		out, errCreate := os.Create(fmt.Sprintf("./public/images/%s", imageName))
+		if errCreate != nil {
+			return c.JSON(fiber.Map{"status": 500, "message": "Server error", "data": nil})
+		}
+		defer out.Close()
+		jpeg.Encode(out, m, nil)
 		category.Image = imageName
 	}
 
@@ -227,13 +253,13 @@ func UpdateCategory(c *fiber.Ctx) error {
 // attributes start
 
 func GetAttributes(c *fiber.Ctx) error {
-	var attributes []model.AdminProductAttributes
+	var attributes []model.Attribute
 	model.DB.Find(&attributes)
 
 	return c.Status(200).JSON(attributes)
 }
 func CreateAttributes(c *fiber.Ctx) error {
-	attribute := new(model.AdminProductAttributes)
+	attribute := new(model.Attribute)
 	if err := c.BodyParser(attribute); err != nil {
 		return err
 	}
@@ -241,12 +267,12 @@ func CreateAttributes(c *fiber.Ctx) error {
 	return c.Status(201).JSON(attribute)
 }
 func GetSingleAttributes(c *fiber.Ctx) error {
-	var attribute model.AdminProductAttributes
+	var attribute model.Attribute
 	model.DB.First(&attribute, "id = ?", c.Params("id"))
 	return c.Status(201).JSON(attribute)
 }
 func EditSingleAttributes(c *fiber.Ctx) error {
-	attribute := new(model.AdminProductAttributes)
+	attribute := new(model.Attribute)
 	err := model.DB.First(&attribute, c.Params("id"))
 	if err.Error != nil {
 		return c.JSON(fiber.Map{"status": fiber.StatusNotFound})
@@ -259,17 +285,17 @@ func EditSingleAttributes(c *fiber.Ctx) error {
 	return c.JSON(&attribute)
 }
 func PermanentDeleteSingleAttributes(c *fiber.Ctx) error {
-	var attribute model.AdminProductAttributes
+	var attribute model.Attribute
 	model.DB.Unscoped().Delete(&attribute, c.Params("id"))
 	return c.SendStatus(200)
 }
 func AttributesSoftDelete(c *fiber.Ctx) error {
-	var attribute []model.AdminProductAttributes
+	var attribute []model.Attribute
 	model.DB.Delete(&attribute, c.Params("id"))
 	return c.JSON(fiber.Map{"status": fiber.StatusOK})
 }
 func AttributesSoftRecoverDelete(c *fiber.Ctx) error {
-	var attribute model.AdminProductAttributes
+	var attribute model.Attribute
 	model.DB.Model(&attribute).Unscoped().Where("id = ?", c.Params("id")).Update("deleted_at", nil)
 	return c.SendStatus(200)
 }
@@ -335,30 +361,29 @@ func RecoverSellerRequest(c *fiber.Ctx) error {
 
 func SellerShopsNonActivate(c *fiber.Ctx) error {
 	var sellerNonActiveShops []model.SellerShop
-	model.DB.Where("active = ?", false).Find(&sellerNonActiveShops)
+	model.DB.Preload("ShopCategory").Where("active = ?", false).Find(&sellerNonActiveShops)
 	return c.Status(200).JSON(sellerNonActiveShops)
 }
 func SellerShopsActivate(c *fiber.Ctx) error {
 	var sellerActiveShops []model.SellerShop
-	model.DB.Where("active = ?", true).Where("deleted_at IS NULL").Find(&sellerActiveShops)
+	model.DB.Preload("ShopCategory").Where("active = ?", true).Where("deleted_at IS NULL").Find(&sellerActiveShops)
 	return c.Status(200).JSON(sellerActiveShops)
 }
 func SellerShopsDeleted(c *fiber.Ctx) error {
 	var sellerActiveShops []model.SellerShop
-	model.DB.Unscoped().Not("deleted_at IS NULL").Find(&sellerActiveShops)
+	model.DB.Preload("ShopCategory").Unscoped().Not("deleted_at IS NULL").Find(&sellerActiveShops)
 	return c.Status(200).JSON(sellerActiveShops)
 }
 
 func SellerShopsAll(c *fiber.Ctx) error {
 	var sellerActiveShops []model.SellerShop
-	model.DB.Unscoped().Find(&sellerActiveShops)
+	model.DB.Preload("ShopCategory").Unscoped().Find(&sellerActiveShops)
 	return c.Status(200).JSON(sellerActiveShops)
 }
 
-
 func ActiveSellerShops(c *fiber.Ctx) error {
 	shop := new(model.SellerShop)
-	ShopFound := model.DB.Where("active = ?",false).First(&shop, "id = ?", c.Params("id"))
+	ShopFound := model.DB.Where("active = ?", false).First(&shop, "id = ?", c.Params("id"))
 	if ShopFound.Error != nil {
 		return c.SendStatus(404)
 	}
@@ -372,20 +397,69 @@ func ActiveSellerShops(c *fiber.Ctx) error {
 }
 func SoftDeleteSellerShops(c *fiber.Ctx) error {
 	shop := new(model.SellerShop)
-	model.DB.Find(&shop, "id = ?", c.Params("id")).Updates(model.SellerShop{Active: false,AdminID: c.Locals("AuthID").(uint)})
+	model.DB.Find(&shop, "id = ?", c.Params("id")).Updates(model.SellerShop{Active: false, AdminID: c.Locals("AuthID").(uint)})
 	model.DB.Delete(&shop)
 	return c.SendStatus(200)
 }
 func PermanentDeleteSellerShops(c *fiber.Ctx) error {
 	shop := new(model.SellerShop)
-	model.DB.Unscoped().Where( "id = ?", c.Params("id")).Find(&shop)
+	model.DB.Unscoped().Where("id = ?", c.Params("id")).Find(&shop)
 	model.DB.Unscoped().Delete(&shop)
 	return c.SendStatus(200)
 }
 func RecoverDeleteSellerShops(c *fiber.Ctx) error {
 	shop := new(model.SellerShop)
-	model.DB.Model(&shop).Unscoped().Where( "id = ?", c.Params("id")).Updates(map[string]interface{}{"deleted_at": nil,"admin_id": c.Locals("AuthID").(uint)})
+	model.DB.Model(&shop).Unscoped().Where("id = ?", c.Params("id")).Updates(map[string]interface{}{"deleted_at": nil, "admin_id": c.Locals("AuthID").(uint)})
 	return c.SendStatus(200)
 }
 
 // seller shops end
+
+// product brand start
+
+func BrandAll(c *fiber.Ctx) error {
+	var brands []model.Brand
+	model.DB.Find(&brands)
+	return c.JSON(brands)
+}
+
+func BrandCreate(c *fiber.Ctx) error {
+	brand := new(model.Brand)
+	if err := c.BodyParser(brand); err != nil {
+		return err
+	}
+	model.DB.Create(&brand)
+	return c.Status(200).JSON(brand)
+
+}
+
+func BrandEdit(c *fiber.Ctx) error {
+	brand := new(model.Brand)
+	err := model.DB.First(&brand, c.Params("id"))
+	if err.Error != nil {
+		return c.JSON(fiber.Map{"status": fiber.StatusNotFound})
+	}
+	if err := c.BodyParser(brand); err != nil {
+		return err
+	}
+	model.DB.Save(&brand)
+	return c.JSON(&brand)
+}
+func BrandSoftDelete(c *fiber.Ctx) error {
+	var brands model.Brand
+	model.DB.Delete(&brands, c.Params("id"))
+	return c.SendStatus(200)
+}
+func BrandDelete(c *fiber.Ctx) error {
+	var brands model.Brand
+	model.DB.Unscoped().Delete(&brands, c.Params("id"))
+	return c.SendStatus(200)
+}
+
+func BrandRecoverDelete(c *fiber.Ctx) error {
+	var brands []model.Brand
+	model.DB.Unscoped().First(&brands, "id = ?", c.Params("id")).Update("deleted_at", nil)
+	return c.SendStatus(200)
+}
+
+// product brand end
