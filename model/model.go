@@ -3,9 +3,9 @@ package model
 import (
 	"fmt"
 	"github.com/shopspring/decimal"
+	"gorm.io/datatypes"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"time"
 )
 
 var DB *gorm.DB
@@ -115,11 +115,11 @@ type SellerProduct struct {
 	Active          bool            `json:"active" gorm:"default:false"`
 	Description     string          `json:"description" form:"description" gorm:"type:text"`
 	OfferPrice      int             `json:"offer_price" form:"offer_price"`
-	OfferPriceStart time.Time       `json:"offer_price_start" form:"offer_price_start"`
-	OfferPriceEnd   time.Time       `json:"offer_price_end" form:"offer_price_end"`
-	NextStock       time.Time       `json:"next_stock" form:"next_stock"`
+	OfferPriceStart *datatypes.Date  `json:"offer_price_start" form:"offer_price_start"`
+	OfferPriceEnd   *datatypes.Date  `json:"offer_price_end" form:"offer_price_end"`
+	NextStock       *datatypes.Date       `json:"next_stock" form:"next_stock"`
 
-	BrandID                *uint                     `json:"brand_id" form:"brand_id" gorm:"index"`
+	BrandID                *uint                    `json:"brand_id" form:"brand_id" gorm:"index"`
 	Brand                  Brand                    `json:"brand"`
 	UserID                 uint                     `json:"user_id" form:"user_id" gorm:"index"`
 	User                   User                     `json:"user" form:"user"`
