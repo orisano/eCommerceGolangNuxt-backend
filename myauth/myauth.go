@@ -33,8 +33,10 @@ type requestLogin struct {
 func GetUser(c *fiber.Ctx) error {
 	cookie := c.Cookies("bongoauth")
 	err, data, _ := mixin.VerifyToken(cookie)
+
 	if !err {
-		c.Status(fiber.StatusNoContent)
+		fmt.Println("err: ",err)
+		return c.SendStatus(fiber.StatusNoContent)
 	}
 	var user model.User
 	model.DB.First(&user, "id = ?", data.Issuer)
@@ -103,19 +105,26 @@ func UserRegister(c *fiber.Ctx) error {
 	var totalUser int64
 	model.DB.Model(model.User{}).Where("phone_number = ?", body.PhoneNumber).Count(&totalUser)
 	if totalUser > 0 {
-		return c.Status(422).JSON(fiber.Map{
-			"Phone number": "User is already exists!!",
-		})
+		return c.Status(fiber.StatusUnprocessableEntity).SendString("User is already exists!!")
 	}
 	matched, _ := regexp.MatchString(`(^(01)[3-9]\d{8})$`, body.PhoneNumber)
 	if !matched {
-		return c.Status(422).JSON(fiber.Map{
-			"Phone number": "Please provide a valid phone number.",
-		})
+		return c.Status(422).SendString("Please provide a valid phone number.")
 	}
 	hash, _ := HashPassword(body.Password) // ignore error for the sake of simplicity
 	user := model.User{PhoneNumber: body.PhoneNumber, Password: hash, Name: body.Name}
 	model.DB.Select("Name", "PhoneNumber", "Password").Create(&user)
+	// auto login
+	token, tokenErr := mixin.GetToken(int(user.ID))
+	if tokenErr != nil {
+		return c.Status(500).SendString("Cannot purge token.")
+	}
+	c.Cookie(&fiber.Cookie{
+		Name:     "bongoauth",
+		Value:    token,
+		Expires:  time.Now().Add(time.Hour * 24),
+		HTTPOnly: true,
+	})
 	return c.SendStatus(200)
 }
 
@@ -147,7 +156,6 @@ func UserLogin(c *fiber.Ctx) error {
 		HTTPOnly: true,
 	})
 	return c.SendStatus(200)
-
 }
 func SellerLogin(c *fiber.Ctx) error {
 	body := new(requestLogin)

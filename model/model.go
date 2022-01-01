@@ -108,16 +108,16 @@ type SellerProduct struct {
 	gorm.Model
 	ID              uint            `json:"id" gorm:"primaryKey;<-:create;"`
 	Name            string          `json:"name" form:"name" `
-	Slug            string          `gorm:"unique;<-:create"`
+	Slug            string          `gorm:"unique;<-:create" json:"slug"`
 	SellingPrice    decimal.Decimal `sql:"type:decimal(10,2)" json:"selling_price" form:"selling_price"`
 	ProductPrice    decimal.Decimal `sql:"type:decimal(10,2)" json:"product_price" form:"product_price"`
 	Quantity        int             `json:"quantity" form:"quantity" gorm:"default:0"`
 	Active          bool            `json:"active" gorm:"default:false"`
 	Description     string          `json:"description" form:"description" gorm:"type:text"`
 	OfferPrice      int             `json:"offer_price" form:"offer_price"`
-	OfferPriceStart *datatypes.Date  `json:"offer_price_start" form:"offer_price_start"`
-	OfferPriceEnd   *datatypes.Date  `json:"offer_price_end" form:"offer_price_end"`
-	NextStock       *datatypes.Date       `json:"next_stock" form:"next_stock"`
+	OfferPriceStart *datatypes.Date `json:"offer_price_start" form:"offer_price_start"`
+	OfferPriceEnd   *datatypes.Date `json:"offer_price_end" form:"offer_price_end"`
+	NextStock       *datatypes.Date `json:"next_stock" form:"next_stock"`
 
 	BrandID                *uint                    `json:"brand_id" form:"brand_id" gorm:"index"`
 	Brand                  Brand                    `json:"brand"`
@@ -196,9 +196,10 @@ type CartProduct struct {
 	ID                       uint                   `json:"id" gorm:"primaryKey;index;<-:create"`
 	CartID                   uint                   `json:"cart_id" gorm:"index"`
 	Cart                     Cart                   `json:"cart"`
+	Quantity                 int                    `json:"quantity"`
 	SellerProductID          uint                   `json:"seller_product_id" gorm:"index"`
 	SellerProduct            SellerProduct          `json:"seller_product"`
-	SellerProductVariationID uint                   `json:"seller_product_variation_id" gorm:"index"`
+	SellerProductVariationID *uint                   `json:"seller_product_variation_id" gorm:"index"`
 	SellerProductVariation   SellerProductVariation `json:"seller_product_variation"`
 }
 type UserLocation struct {

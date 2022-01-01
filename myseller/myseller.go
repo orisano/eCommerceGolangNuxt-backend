@@ -785,11 +785,11 @@ func EditBasicProduct(c *fiber.Ctx) error {
 		NextStock    *datatypes.Date `json:"next_stock"`
 	}
 	product := new(form)
-	fmt.Println(product)
+
 	if err := c.BodyParser(product); err != nil {
 		return err
 	}
-
+	fmt.Println("product: ",product)
 	if err := model.DB.Model(model.SellerProduct{}).Where("user_id = ?", c.Locals("AuthID")).Where("id = ?", c.Params("product_id")).Updates(model.SellerProduct{Quantity: product.Quantity, ProductPrice: product.ProductPrice, SellingPrice: product.SellingPrice, NextStock: product.NextStock}); err.Error != nil {
 		return c.SendStatus(fiber.StatusForbidden)
 	}

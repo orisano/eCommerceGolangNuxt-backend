@@ -16,10 +16,15 @@ import (
 func main() {
 	app := fiber.New()
 	model.InitDatabase()
-
 	app.Use(cors.New(cors.Config{
 		AllowCredentials: true,
 	}))
+	//app.Use(csrf.New(csrf.Config{
+	//	KeyLookup:      "header:X-Csrf-Token",
+	//	CookieName:     "csrf_bongo",
+	//	CookieSameSite: "Strict",
+	//}))
+
 	app.Use(logger.New(logger.Config{
 		TimeZone: "Asia/Dhaka",
 	}))
