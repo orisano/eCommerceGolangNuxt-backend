@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:postgresql://localhost:5432/bongobitan</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="bongo_ent@localhost" uuid="28604b4c-4134-4ac3-b18a-a2ebc4a20149">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5432/bongo_ent</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>
