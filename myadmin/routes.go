@@ -69,12 +69,12 @@ func AdminRoutes(app *fiber.App) {
 	admin.Put("/seller/shops/soft/delete/:id", SoftDeleteSellerShops)
 	admin.Delete("/seller/shops/permanent/delete/:id", PermanentDeleteSellerShops)
 	admin.Put("/seller/shops/recover/delete/:id", RecoverDeleteSellerShops)
-//	product brand
-	admin.Get("/product/brand/all",BrandAll)
-	admin.Post("/product/brand/create",BrandCreate)
-	admin.Put("/product/brand/update/:id",BrandEdit)
-	admin.Delete("/product/brand/soft/delete/:id",BrandSoftDelete)
-	admin.Delete("/product/brand/delete/:id",BrandDelete)
-	admin.Put("/product/brand/recover/:id",BrandRecoverDelete)
+	//	product brand
+	admin.Get("/product/brand/all", BrandAll)
+	admin.Post("/product/brand/create", BrandCreate)
+	admin.Put("/product/brand/update/:id", BrandEdit)
+	admin.Delete("/product/brand/soft/delete/:id", BrandSoftDelete)
+	admin.Delete("/product/brand/delete/:id", BrandDelete)
+	admin.Put("/product/brand/recover/:id", BrandRecoverDelete)
 
 }

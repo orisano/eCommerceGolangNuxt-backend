@@ -9,7 +9,7 @@ import (
 	"github.com/morkid/paginate"
 	"github.com/nfnt/resize"
 	"github.com/shopspring/decimal"
-	"gorm.io/datatypes"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"image"
 	"image/jpeg"
@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 func AllSellerActiveShops(c *fiber.Ctx) error {
@@ -334,9 +335,9 @@ func CreateProduct(c *fiber.Ctx) error {
 				OfferPrice     int             `json:"offer_price"`
 				Quantity       int             `json:"quantity"`
 				Description    string          `json:"description"`
-				OfferDateStart *datatypes.Date `json:"offer_date_start"`
-				OfferDateEnd   *datatypes.Date `json:"offer_date_end"`
-				NextStockDate  *datatypes.Date `json:"next_stock_date"`
+				OfferDateStart time.Time       `json:"offer_date_start"`
+				OfferDateEnd   time.Time       `json:"offer_date_end"`
+				NextStockDate  time.Time       `json:"next_stock_date"`
 			}
 
 			var formBasic basic
@@ -550,7 +551,6 @@ func CreateProduct(c *fiber.Ctx) error {
 					filename := strings.Replace(uniqueId.String(), "-", "", -1)
 					fileExt := strings.Split(file.Filename, ".")[1]
 					imageName := fmt.Sprintf("%s.%s", filename, fileExt)
-					fmt.Println("File ext: ", fileExt)
 					for {
 						var count int64
 						model.DB.Model(&model.SellerProductVariation{}).Where("image = ?", imageName).Count(&count)
@@ -782,25 +782,24 @@ func EditBasicProduct(c *fiber.Ctx) error {
 		Quantity     int             `json:"quantity"`
 		ProductPrice decimal.Decimal `json:"product_price"`
 		SellingPrice decimal.Decimal `json:"selling_price"`
-		NextStock    *datatypes.Date `json:"next_stock"`
+		NextStock    time.Time       `json:"next_stock"`
 	}
 	product := new(form)
 
 	if err := c.BodyParser(product); err != nil {
 		return err
 	}
-	fmt.Println("product: ",product)
+	fmt.Println("product: ", product)
 	if err := model.DB.Model(model.SellerProduct{}).Where("user_id = ?", c.Locals("AuthID")).Where("id = ?", c.Params("product_id")).Updates(model.SellerProduct{Quantity: product.Quantity, ProductPrice: product.ProductPrice, SellingPrice: product.SellingPrice, NextStock: product.NextStock}); err.Error != nil {
 		return c.SendStatus(fiber.StatusForbidden)
 	}
-
 	return c.SendStatus(200)
 }
 func EditBasicOfferProduct(c *fiber.Ctx) error {
 	type OfferPrice struct {
-		OfferPrice      int             `json:"offer_price"`
-		OfferPriceStart *datatypes.Date `json:"offer_price_start"`
-		OfferPriceEnd   *datatypes.Date `json:"offer_price_end"`
+		OfferPrice      int       `json:"offer_price"`
+		OfferPriceStart time.Time `json:"offer_price_start"`
+		OfferPriceEnd   time.Time `json:"offer_price_end"`
 	}
 	productOffer := new(OfferPrice)
 	if err := c.BodyParser(productOffer); err != nil {
@@ -904,7 +903,6 @@ func AddNewProductVariation(c *fiber.Ctx) error {
 				errVariance := json.Unmarshal([]byte(varianceRaw[0]), &variances)
 				fmt.Println("variance: ", variances)
 				if errVariance != nil {
-					fmt.Println(errVariance)
 					return c.Status(500).SendString("Try again")
 				}
 				// get variance images
@@ -914,7 +912,6 @@ func AddNewProductVariation(c *fiber.Ctx) error {
 					filename := strings.Replace(uniqueId.String(), "-", "", -1)
 					fileExt := strings.Split(file.Filename, ".")[1]
 					imageName := fmt.Sprintf("%s.%s", filename, fileExt)
-					fmt.Println("File ext: ", fileExt)
 					for {
 						var count int64
 						model.DB.Model(&model.SellerProductVariation{}).Where("image = ?", imageName).Count(&count)
@@ -923,7 +920,6 @@ func AddNewProductVariation(c *fiber.Ctx) error {
 							uniqueId := uuid.New()
 							fileExt := strings.Split(file.Filename, ".")[1]
 							filename := strings.Replace(uniqueId.String(), "-", "", -1)
-							fmt.Println("File ext: 1 ", fileExt)
 							imageName = fmt.Sprintf("%s.%s", filename, fileExt)
 						} else {
 							break
@@ -933,7 +929,6 @@ func AddNewProductVariation(c *fiber.Ctx) error {
 					img, _ := file.Open()
 
 					CusImage, _, errImg := image.Decode(img)
-					fmt.Println("6")
 					fmt.Println(strings.Split(file.Filename, ".")[1])
 					if errImg != nil {
 						return errImg
@@ -984,9 +979,7 @@ func AddNewProductVariation(c *fiber.Ctx) error {
 				}
 				return c.JSON(allVariance)
 			}
-
 		}
-
 	}
 	return c.SendStatus(400)
 }
@@ -1021,4 +1014,59 @@ func DeleteProductVariation(c *fiber.Ctx) error {
 	}
 	tx.Commit()
 	return c.SendStatus(200)
+}
+
+// order
+
+func MyNewOrder(c *fiber.Ctx) error {
+	var sellerCheckoutProduct []model.CheckoutProduct
+	model.DB.Select([]string{"id","checkout_id","seller_product_id","quantity","selling_price","received","status"}).Preload("SellerProduct",func(db *gorm.DB) *gorm.DB {
+		return db.Select([]string{"id","name"})
+	}).Preload("SellerProduct.SellerProductImage", func(db *gorm.DB) *gorm.DB {
+		return db.Select([]string{"id", "seller_product_id", "display", "image"}).Where("display = ?",true)
+	}).Preload("Checkout", func(db *gorm.DB) *gorm.DB {
+		return db.Select([]string{"id","user_location_id"})
+	}).Preload("Checkout.UserLocation", func(db *gorm.DB) *gorm.DB {
+		return db.Select([]string{"id","area","street","house","post_office","post_code","police_station","city"})
+	}).Where("selling_seller_id = ?",c.Locals("AuthID")).Find(&sellerCheckoutProduct)
+	return c.JSON(sellerCheckoutProduct)
+}
+
+func OrderStatistic(c *fiber.Ctx) error {
+	var productOrder []model.CheckoutProduct
+	model.DB.Where("selling_seller_id = ?",c.Locals("AuthID")).Find(&productOrder)
+	type statisticData struct {
+		TodayIncome decimal.Decimal `json:"today_income"`
+		TotalIncome decimal.Decimal `json:"total_income"`
+	}
+	var statistic statisticData
+	for _, product := range productOrder {
+		productTime, _ := time.Parse(product.UpdatedAt.String(),"2006-01-02")
+		currentDate, _ := time.Parse(time.Now().String(),"2006-01-02")
+		if productTime == currentDate {
+			statistic.TodayIncome = statistic.TodayIncome.Add(product.SellingPrice)
+		}
+		statistic.TotalIncome = statistic.TotalIncome.Add(product.SellingPrice)
+	}
+	return c.JSON(statistic)
+}
+
+func DetailsCheckoutProduct(c *fiber.Ctx) error {
+	var sellerCheckoutProduct model.CheckoutProduct
+	model.DB.Select([]string{"id","checkout_id","seller_product_id","seller_product_variation_id","quantity","selling_price","offer_price","received","status"}).Preload("SellerProduct",func(db *gorm.DB) *gorm.DB {
+		return db.Select([]string{"id","name"})
+	}).Preload("SellerProduct.SellerProductImage", func(db *gorm.DB) *gorm.DB {
+		return db.Select([]string{"id", "seller_product_id", "display", "image"}).Where("display = ?",true)
+	}).Preload("Checkout", func(db *gorm.DB) *gorm.DB {
+		return db.Select([]string{"id","user_location_id"})
+	}).Preload("Checkout.UserLocation", func(db *gorm.DB) *gorm.DB {
+		return db.Select([]string{"id","area","street","house","post_office","post_code","police_station","city"})
+	}).Preload("SellerProductVariation", func(db *gorm.DB) *gorm.DB {
+		return db.Select([]string{"id","seller_product_id"})
+	}).Preload("SellerProductVariation.SellerProductVariationValues", func(db *gorm.DB) *gorm.DB {
+		return db.Select([]string{"id","name","seller_product_variation_id","attribute_id"})
+	}).Preload("SellerProductVariation.SellerProductVariationValues.Attribute", func(db *gorm.DB) *gorm.DB {
+		return db.Select([]string{"id","name"})
+	}).Where("selling_seller_id = ?",c.Locals("AuthID")).First(&sellerCheckoutProduct,c.Params("id"))
+	return c.JSON(sellerCheckoutProduct)
 }

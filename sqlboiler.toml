@@ -1,0 +1,10 @@
+# no-tests = true
+
+[psql]
+  dbname = "bongobitan"
+  host   = "localhost"
+  port   = 5432
+  user   = "postgres"
+  pass   = "123456"
+  sslmode = "disable"
+#   blacklist = ["migrations", "other"]

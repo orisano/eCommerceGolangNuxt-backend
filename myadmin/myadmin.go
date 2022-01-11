@@ -29,6 +29,18 @@ func GetShopCategoryOnly(c *fiber.Ctx) error {
 	model.DB.Find(&shopCategories)
 	return c.JSON(shopCategories)
 }
+//func GetShopCategory(c *fiber.Ctx) error {
+//	var shopCategories []model.ShopCategory
+//	var shopTrashCategories []model.ShopCategory
+//	model.DB.Select([]string{"ID", "Name", "Slug", "Image", "DeletedAt"}).Find(&shopCategories)
+//	model.DB.Unscoped().Not("deleted_at IS NULL").Select([]string{"ID", "Name", "Slug", "Image", "DeletedAt"}).Find(&shopTrashCategories)
+//
+//	return c.Status(200).JSON(fiber.Map{
+//		"shop_categories":       shopCategories,
+//		"shop_categories_trash": shopTrashCategories,
+//	})
+//}
+
 func GetShopCategory(c *fiber.Ctx) error {
 	var shopCategories []model.ShopCategory
 	var shopTrashCategories []model.ShopCategory
@@ -54,7 +66,7 @@ func GetTargetShopCategory(c *fiber.Ctx) error {
 	var shopCategory model.ShopCategory
 	err := model.DB.First(&shopCategory, "id = ?", c.Params("id"))
 	if err.Error != nil {
-		c.Status(204).SendString("Data cannot be found.")
+		return c.Status(204).SendString("Data cannot be found.")
 	}
 	return c.JSON(shopCategory)
 }
@@ -73,7 +85,7 @@ func ShopCategoryPermanentDelete(c *fiber.Ctx) error {
 	var shopCategories []model.ShopCategory
 	err := model.DB.Unscoped().Delete(&shopCategories, c.Params("id"))
 	if err.Error != nil {
-		c.Status(fiber.StatusBadRequest).SendString("Cannot delete. try again.")
+		return c.Status(fiber.StatusBadRequest).SendString("Cannot delete. try again.")
 	}
 	return c.SendStatus(200)
 }
@@ -333,9 +345,7 @@ func AcceptSellerRequest(c *fiber.Ctx) error {
 		model.DB.Select("Name", "PhoneNumber", "Password", "Seller").Create(&user)
 		return c.SendStatus(201)
 	} else {
-		return c.Status(422).JSON(fiber.Map{
-			"message": "User with this phone number already available",
-		})
+		return c.Status(422).SendString("User with this phone number already available")
 	}
 }
 func RemoveSellerRequest(c *fiber.Ctx) error {

@@ -54,4 +54,8 @@ func SellerRoutes(app *fiber.App) {
 	seller.Patch("/product/edit/variation/:product_id/:variation_id", EditProductVariation)
 	seller.Post("/product/new/variation/:product_id", AddNewProductVariation)
 	seller.Delete("/product/delete/variation/:product_id/:variation_id", DeleteProductVariation)
+	//	order
+	seller.Get("/my/order",MyNewOrder)
+	seller.Get("/order/income/statistic",OrderStatistic)
+	seller.Get("/checkout/product/details/:id",DetailsCheckoutProduct)
 }

@@ -3,9 +3,9 @@ package model
 import (
 	"fmt"
 	"github.com/shopspring/decimal"
-	"gorm.io/datatypes"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"time"
 )
 
 var DB *gorm.DB
@@ -13,8 +13,8 @@ var err error
 
 type ShopCategory struct {
 	gorm.Model
-	ID            uint            `json:"id" gorm:"primaryKey;index;<-:create"`
-	Name          string          `json:"name" form:"name"`
+	ID            uint            `boil:"id" json:"id" gorm:"primaryKey;index;<-:create"`
+	Name          string          `boil:"name" json:"name" form:"name"`
 	Slug          string          `json:"slug" gorm:"unique;<-:create" form:"slug"`
 	Image         string          `json:"image" form:"image"`
 	Category      []Category      `json:"categories" form:"categories"`
@@ -67,7 +67,6 @@ type User struct {
 	SellingSeller      []CheckoutProduct `json:"selling_seller" gorm:"foreignKey:SellingSellerID"`
 	AdminShopActivated []SellerShop      `gorm:"foreignKey:AdminID"`
 }
-
 type SellerRequest struct {
 	gorm.Model
 	ID             uint         `json:"id" gorm:"primaryKey;index;<-:create"`
@@ -106,19 +105,18 @@ type SellerShop struct {
 }
 type SellerProduct struct {
 	gorm.Model
-	ID              uint            `json:"id" gorm:"primaryKey;<-:create;"`
-	Name            string          `json:"name" form:"name" `
-	Slug            string          `gorm:"unique;<-:create" json:"slug"`
-	SellingPrice    decimal.Decimal `sql:"type:decimal(10,2)" json:"selling_price" form:"selling_price"`
-	ProductPrice    decimal.Decimal `sql:"type:decimal(10,2)" json:"product_price" form:"product_price"`
-	Quantity        int             `json:"quantity" form:"quantity" gorm:"default:0"`
-	Active          bool            `json:"active" gorm:"default:false"`
-	Description     string          `json:"description" form:"description" gorm:"type:text"`
-	OfferPrice      int             `json:"offer_price" form:"offer_price"`
-	OfferPriceStart *datatypes.Date `json:"offer_price_start" form:"offer_price_start"`
-	OfferPriceEnd   *datatypes.Date `json:"offer_price_end" form:"offer_price_end"`
-	NextStock       *datatypes.Date `json:"next_stock" form:"next_stock"`
-
+	ID                     uint                     `json:"id" gorm:"primaryKey;<-:create;"`
+	Name                   string                   `json:"name" form:"name" `
+	Slug                   string                   `gorm:"unique;<-:create" json:"slug"`
+	SellingPrice           decimal.Decimal          `sql:"type:decimal(10,2)" json:"selling_price" form:"selling_price"`
+	ProductPrice           decimal.Decimal          `sql:"type:decimal(10,2)" json:"product_price" form:"product_price"`
+	Quantity               int                      `json:"quantity" form:"quantity" gorm:"default:0"`
+	Active                 bool                     `json:"active" gorm:"default:false"`
+	Description            string                   `json:"description" form:"description" gorm:"type:text"`
+	OfferPrice             int                      `json:"offer_price" form:"offer_price"`
+	OfferPriceStart        time.Time                `json:"offer_price_start" form:"offer_price_start"`
+	OfferPriceEnd          time.Time                `json:"offer_price_end" form:"offer_price_end"`
+	NextStock              time.Time                `json:"next_stock" form:"next_stock"`
 	BrandID                *uint                    `json:"brand_id" form:"brand_id" gorm:"index"`
 	Brand                  Brand                    `json:"brand"`
 	UserID                 uint                     `json:"user_id" form:"user_id" gorm:"index"`
@@ -154,6 +152,7 @@ type SellerProductCategory struct {
 	SellerProductID uint `form:"seller_product_id" json:"seller_product_id" gorm:"index"`
 	CategoryID      uint `form:"category_id" json:"category_id" gorm:"index"`
 }
+
 type SellerProductVariation struct {
 	gorm.Model
 	ID                           uint                           `json:"id" gorm:"primaryKey;index;<-:create"`
@@ -196,58 +195,58 @@ type CartProduct struct {
 	ID                       uint                   `json:"id" gorm:"primaryKey;index;<-:create"`
 	CartID                   uint                   `json:"cart_id" gorm:"index"`
 	Cart                     Cart                   `json:"cart"`
-	Quantity                 int                    `json:"quantity"`
+	Quantity                 int                  `json:"quantity"`
 	SellerProductID          uint                   `json:"seller_product_id" gorm:"index"`
 	SellerProduct            SellerProduct          `json:"seller_product"`
-	SellerProductVariationID *uint                   `json:"seller_product_variation_id" gorm:"index"`
+	SellerProductVariationID *uint                  `json:"seller_product_variation_id" gorm:"index"`
 	SellerProductVariation   SellerProductVariation `json:"seller_product_variation"`
 }
 type UserLocation struct {
 	gorm.Model
-	ID            uint   `json:"id" gorm:"primaryKey;index;<-:create"`
-	UserID        uint   `json:"user_id" gorm:"index"`
-	User          User   `json:"user"`
-	Area          string `json:"area"`
-	Street        string `json:"street"`
-	House         string `json:"house"`
-	PostOffice    string `json:"post_office"`
-	PostCode      string `json:"post_code"`
-	PoliceStation string `json:"police_station"`
-	City          string `json:"city"`
-	Checkout      []Checkout
+	ID            uint       `json:"id" gorm:"primaryKey;index;<-:create"`
+	UserID        uint       `json:"user_id" gorm:"index"`
+	User          User       `json:"user"`
+	Area          string     `json:"area"`
+	Street        *string    `json:"street"`
+	House         *string    `json:"house"`
+	PostOffice    string     `json:"post_office"`
+	PostCode      string     `json:"post_code"`
+	PoliceStation string     `json:"police_station"`
+	City          string     `json:"city"`
+	Checkout      []Checkout `json:"checkout"`
 }
 
 type Checkout struct {
 	gorm.Model
-	ID     uint   `json:"id" gorm:"primaryKey;index;<-:create"`
-	Slug   string `json:"slug" gorm:"<-:create"`
-	CartID int    `json:"cart_id" gorm:"index"`
+	ID     uint `json:"id" gorm:"primaryKey;index;<-:create"`
+	CartID uint `json:"cart_id" gorm:"index"`
 	//Cart           Cart         `json:"cart"`
-	TotalPrice      float32      `json:"total_price" sql:"type:decimal(10,2)"`
-	UserLocationID  uint         `json:"user_location_id" gorm:"index"`
-	UserLocation    UserLocation `json:"user_location"`
-	Completed       bool         `json:"completed" gorm:"default:false"`
-	UserID          uint         `json:"user_id" gorm:"index"`
-	User            User         `json:"user"`
+	TotalPrice      decimal.Decimal `json:"total_price" sql:"type:decimal(10,2)"`
+	UserLocationID  uint            `json:"user_location_id" gorm:"index"`
+	UserLocation    UserLocation    `json:"user_location"`
+	Completed       bool            `json:"completed" gorm:"default:false"`
+	UserID          uint            `json:"user_id" gorm:"index"`
+	User            User            `json:"user"`
 	CheckoutProduct []CheckoutProduct
 }
 type CheckoutProduct struct {
 	gorm.Model
-	ID              uint   `json:"id" gorm:"primaryKey;index;<-:create"`
-	Slug            string `json:"slug" gorm:"<-:create"`
-	CheckoutID      uint   `json:"checkout_id" gorm:"index"`
-	Checkout        Checkout
-	SellerProductID uint          `json:"seller_product_id" gorm:"index"`
-	SellerProduct   SellerProduct `json:"seller_product"`
-	Quantity        int           `json:"quantity"`
-	SellingPrice    float32       `json:"selling_price" sql:"type:decimal(10,2)"`
-	OfferPrice      float32       `json:"offer_price" sql:"type:decimal(10,2)"`
-	Received        bool          `json:"received" gorm:"default:false"`
-	Status          int           `json:"status" gorm:"default:0"`
-	UserID          uint          `json:"user_id" gorm:"index"`
-	User            User          `json:"user"`
-	SellingSellerID uint          `json:"selling_seller_id" gorm:"index"`
-	SellingSeller   User          `json:"seller" gorm:"foreignKey:SellingSellerID"`
+	ID                       uint                   `json:"id" gorm:"primaryKey;index;<-:create"`
+	CheckoutID               uint                   `json:"checkout_id" gorm:"index"`
+	Checkout                 Checkout               `json:"checkout"`
+	SellerProductID          uint                   `json:"seller_product_id" gorm:"index"`
+	SellerProductVariationID *uint                  `json:"seller_product_variation_id"`
+	SellerProductVariation   SellerProductVariation `json:"seller_product_variation"`
+	Quantity                 int                  `json:"quantity"`
+	SellingPrice             decimal.Decimal        `json:"selling_price" sql:"type:decimal(10,2)"`
+	OfferPrice               int                    `json:"offer_price" sql:"type:decimal(10,2)"`
+	Received                 bool                   `json:"received" gorm:"default:false"`
+	Status                   int                    `json:"status" gorm:"default:0"`
+	UserID                   uint                   `json:"user_id" gorm:"index"`
+	User                     User                   `json:"user"`
+	SellingSellerID          uint                   `json:"selling_seller_id" gorm:"index"`
+	SellingSeller            User                   `json:"seller" gorm:"foreignKey:SellingSellerID"`
+	SellerProduct            SellerProduct          `json:"seller_product"`
 }
 
 // user end
@@ -255,25 +254,31 @@ type CheckoutProduct struct {
 // InitDatabase database connection
 func InitDatabase() {
 	//DB, err = gorm.Open(sqlite.Open("bongobitan.db"), &gorm.Config{})
+	//if err != nil {
+	//	panic("failed to connect database")
+	//}
 	//dsn := "root:@tcp(localhost)/bongobitan?charset=utf8mb4&parseTime=True&loc=Local"
 	//DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	//DB, err = gorm.Open(postgres.New(postgres.Config{
 	//	DSN:                  "user=postgres password=123456 dbname=bongobitan port=5432 sslmode=disable TimeZone=Asia/Dhaka",
 	//	PreferSimpleProtocol: true, // disables implicit prepared statement usage
 	//}), &gorm.Config{})
+	// postgres
 	dsn := "user=postgres password=123456 dbname=bongobitan port=5432 sslmode=disable TimeZone=Asia/Dhaka"
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+		SkipDefaultTransaction: true,
+	})
 	if err != nil {
 		panic("Failed to connect to database")
 	}
+
 	err := DB.AutoMigrate(
 		ShopCategory{},
 		Category{},
-		Brand{},
-		Attribute{},
-
 		User{},
 		SellerRequest{},
+		Brand{},
+		Attribute{},
 		SellerShop{},
 		SellerProduct{},
 		SellerShopProduct{},
@@ -281,7 +286,6 @@ func InitDatabase() {
 		SellerProductCategory{},
 		SellerProductVariation{},
 		SellerProductVariationValues{},
-
 		Cart{},
 		CartProduct{},
 		UserLocation{},

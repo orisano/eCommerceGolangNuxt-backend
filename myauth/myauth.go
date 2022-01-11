@@ -143,7 +143,7 @@ func UserLogin(c *fiber.Ctx) error {
 	}
 	match := CheckPasswordHash(body.Password, user.Password)
 	if !match {
-		return c.SendStatus(422)
+		return c.Status(fiber.StatusBadRequest).SendString("Wrong credentials.")
 	}
 	token, tokenErr := mixin.GetToken(int(user.ID))
 	if tokenErr != nil {

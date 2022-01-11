@@ -31,10 +31,15 @@ func NonAuthRoutes(app *fiber.App) {
 	nonuser.Get("/single/products/:slug/:id",SingleProducts)
 	nonuser.Get("/cart/product/:productID/:variationID",GetCartProduct)
 
+
 	user.Post("/cart/localstorage",CartStorageProducts)
 	user.Post("/cart/product/one",CartProductOne)
 	user.Get("/cart/count",GetCountCart)
 	user.Get("/cart/product/all",GetCartProductAll)
 	user.Delete("/cart/product/remove/:productID",CartUserRemoveProduct)
+	user.Get("/all/location",getAllLocation)
+	user.Post("/create/location",createLocation)
+	user.Delete("/remove/location/:locationID",removeLocation)
+	user.Post("/checkout",checkoutCart)
 }
 

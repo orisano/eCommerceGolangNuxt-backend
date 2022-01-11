@@ -1,11 +1,13 @@
 package main
 
+// go:generate sqlboiler --wipe postgres
 import (
 	"bongo/model"
 	"bongo/myadmin"
 	"bongo/myauth"
 	"bongo/mynonuser"
 	"bongo/myseller"
+	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -14,11 +16,22 @@ import (
 )
 
 func main() {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		JSONEncoder: json.Marshal,
+		JSONDecoder: json.Unmarshal,
+	})
 	model.InitDatabase()
+	//db.Init()
 	app.Use(cors.New(cors.Config{
 		AllowCredentials: true,
 	}))
+
+	// Open handle to database like normal
+	//bun.InitDatabase()
+	//conn.Connect()
+	// If you don't want to pass in db to all generated methods
+	// you can use boil.SetDB to set it globally, and then use
+	// the G variant methods like so (--add-global-variants to enable)
 	//app.Use(csrf.New(csrf.Config{
 	//	KeyLookup:      "header:X-Csrf-Token",
 	//	CookieName:     "csrf_bongo",
@@ -61,4 +74,9 @@ func main() {
 	//	fmt.Println("Cannot start server.")
 	//}
 
+}
+func dieIf(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
