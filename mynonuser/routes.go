@@ -1,9 +1,11 @@
 package mynonuser
 
 import (
+	"bongo/db"
 	"bongo/mixin"
-	"bongo/model"
+	"context"
 	"github.com/gofiber/fiber/v2"
+	"strconv"
 )
 func authMiddleware(c *fiber.Ctx) error {
 	cookie := c.Cookies("bongoauth")
@@ -11,9 +13,11 @@ func authMiddleware(c *fiber.Ctx) error {
 	if !err {
 		c.Status(fiber.StatusUnauthorized)
 	}
-	var user model.User
-	result := model.DB.First(&user, "id = ?", data.Issuer)
-	if result.Error != nil {
+	//var user model.User
+	//result := model.DB.First(&user, "id = ?", data.Issuer)
+	userID, _ := strconv.Atoi(data.Issuer)
+	user, userErr := db.Client.User.Get(context.Background(),userID)
+	if userErr != nil {
 		return c.SendStatus(401)
 	}
 	c.Locals("user_id", user.ID)
@@ -29,14 +33,14 @@ func NonAuthRoutes(app *fiber.App) {
 	nonuser.Get("/single/categories/all/product/:categorySlug/:categoryID",AllProductByCategories)
 	nonuser.Get("/all/products",AllProducts)
 	nonuser.Get("/single/products/:slug/:id",SingleProducts)
+	// Cart start
 	nonuser.Get("/cart/product/:productID/:variationID",GetCartProduct)
-
-
 	user.Post("/cart/localstorage",CartStorageProducts)
-	user.Post("/cart/product/one",CartProductOne)
+	user.Post("/cart/add/product/one",CartProductOne)
 	user.Get("/cart/count",GetCountCart)
 	user.Get("/cart/product/all",GetCartProductAll)
-	user.Delete("/cart/product/remove/:productID",CartUserRemoveProduct)
+	user.Delete("/cart/product/remove/:cartProductID",CartUserRemoveProduct)
+	// Cart end
 	user.Get("/all/location",getAllLocation)
 	user.Post("/create/location",createLocation)
 	user.Delete("/remove/location/:locationID",removeLocation)

@@ -33,5 +33,6 @@ func (Category) Edges() []ent.Edge {
 		edge.From("shop_category", ShopCategory.Type).Ref("categories").Unique(),
 		edge.To("children",Category.Type).From("parent").Unique(),
 		edge.To("product_categories",SellerProductCategory.Type),
+		edge.To("seller_products",SellerProduct.Type),
 	}
 }

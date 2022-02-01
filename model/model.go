@@ -195,7 +195,7 @@ type CartProduct struct {
 	ID                       uint                   `json:"id" gorm:"primaryKey;index;<-:create"`
 	CartID                   uint                   `json:"cart_id" gorm:"index"`
 	Cart                     Cart                   `json:"cart"`
-	Quantity                 int                  `json:"quantity"`
+	Quantity                 int                    `json:"quantity"`
 	SellerProductID          uint                   `json:"seller_product_id" gorm:"index"`
 	SellerProduct            SellerProduct          `json:"seller_product"`
 	SellerProductVariationID *uint                  `json:"seller_product_variation_id" gorm:"index"`
@@ -237,7 +237,7 @@ type CheckoutProduct struct {
 	SellerProductID          uint                   `json:"seller_product_id" gorm:"index"`
 	SellerProductVariationID *uint                  `json:"seller_product_variation_id"`
 	SellerProductVariation   SellerProductVariation `json:"seller_product_variation"`
-	Quantity                 int                  `json:"quantity"`
+	Quantity                 int                    `json:"quantity"`
 	SellingPrice             decimal.Decimal        `json:"selling_price" sql:"type:decimal(10,2)"`
 	OfferPrice               int                    `json:"offer_price" sql:"type:decimal(10,2)"`
 	Received                 bool                   `json:"received" gorm:"default:false"`

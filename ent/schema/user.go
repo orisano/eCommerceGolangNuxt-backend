@@ -23,8 +23,8 @@ func (User) Fields() []ent.Field {
 		field.Bool("staff").Default(false),
 		field.Bool("seller").Default(false),
 		field.Bool("active").Default(false),
-		field.String("admin_user_name").Sensitive(),
-		field.String("admin_user_token").Sensitive(),
+		field.String("admin_user_name").Sensitive().Nillable().Optional(),
+		field.String("admin_user_token").Sensitive().Nillable().Optional(),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),
@@ -38,16 +38,15 @@ func (User) Fields() []ent.Field {
 // Edges of the User.
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("seller_requests",SellerRequest.Type),
-		edge.To("seller_shops",SellerShop.Type),
-		edge.To("seller_products",SellerProduct.Type),
-		edge.To("carts",Cart.Type),
-		edge.To("user_locations",UserLocation.Type),
-		edge.To("checkouts",Checkout.Type),
-		edge.To("checkout_products",CheckoutProduct.Type),
+		edge.To("seller_requests", SellerRequest.Type),
+		edge.To("seller_shops", SellerShop.Type),
+		edge.To("seller_products", SellerProduct.Type),
+		edge.To("carts", Cart.Type),
+		edge.To("user_locations", UserLocation.Type),
+		edge.To("checkouts", Checkout.Type),
+		edge.To("checkout_products", CheckoutProduct.Type),
 
-		edge.To("seller_checkout_products",CheckoutProduct.Type),
-		edge.To("approved_shops",SellerShop.Type),
-
+		edge.To("seller_checkout_products", CheckoutProduct.Type),
+		edge.To("approved_shops", SellerShop.Type),
 	}
 }

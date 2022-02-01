@@ -23,7 +23,7 @@ func (CheckoutProduct) Fields() []ent.Field {
 				dialect.MySQL:    "decimal(6,2)",
 				dialect.Postgres: "numeric",
 			}),
-		field.Int("offer_price"),
+		field.Int("offer_price").Default(0),
 		field.Bool("received").Default(false),
 		field.Int("status").Default(0),
 		field.Time("created_at").
@@ -38,13 +38,13 @@ func (CheckoutProduct) Fields() []ent.Field {
 
 // Edges of the CheckoutProduct.
 func (CheckoutProduct) Edges() []ent.Edge {
-	return []ent.Edge {
-		edge.From("user",User.Type).Ref("checkout_products").Unique(),
+	return []ent.Edge{
+		edge.From("user", User.Type).Ref("checkout_products").Unique(),
 
-		edge.From("checkout",Checkout.Type).Ref("checkout_products").Unique(),
-		edge.From("seller",User.Type).Ref("seller_checkout_products").Unique(),
+		edge.From("checkout", Checkout.Type).Ref("checkout_products").Unique(),
+		edge.From("seller", User.Type).Ref("seller_checkout_products").Unique(),
 
-		edge.From("seller_product",SellerProduct.Type).Ref("checkout_products").Unique(),
-		edge.From("seller_product_variation",SellerProductVariation.Type).Ref("checkout_products").Unique(),
+		edge.From("seller_product", SellerProduct.Type).Ref("checkout_products").Unique(),
+		edge.From("seller_product_variation", SellerProductVariation.Type).Ref("checkout_products").Unique(),
 	}
 }

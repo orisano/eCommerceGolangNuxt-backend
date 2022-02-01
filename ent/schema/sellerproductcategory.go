@@ -2,7 +2,6 @@ package schema
 
 import (
 	"entgo.io/ent"
-	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"time"
 )
@@ -28,7 +27,8 @@ func (SellerProductCategory) Fields() []ent.Field {
 // Edges of the SellerProductCategory.
 func (SellerProductCategory) Edges() []ent.Edge {
 	return []ent.Edge {
-		edge.From("seller_product",SellerProduct.Type).Ref("seller_product_categories").Unique(),
-		edge.From("category",Category.Type).Ref("product_categories").Unique(),
+		//edge.To("seller_products",SellerProduct.Type),
+		//edge.From("seller_product",SellerProduct.Type).Ref("seller_product_categories"),
+		//edge.From("category",Category.Type).Ref("product_categories").Unique(),
 	}
 }
