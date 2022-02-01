@@ -29,6 +29,8 @@ const (
 	EdgeChildren = "children"
 	// EdgeProductCategories holds the string denoting the product_categories edge name in mutations.
 	EdgeProductCategories = "product_categories"
+	// EdgeSellerProducts holds the string denoting the seller_products edge name in mutations.
+	EdgeSellerProducts = "seller_products"
 	// Table holds the table name of the category in the database.
 	Table = "categories"
 	// ShopCategoryTable is the table that holds the shop_category relation/edge.
@@ -53,6 +55,11 @@ const (
 	ProductCategoriesInverseTable = "seller_product_categories"
 	// ProductCategoriesColumn is the table column denoting the product_categories relation/edge.
 	ProductCategoriesColumn = "category_product_categories"
+	// SellerProductsTable is the table that holds the seller_products relation/edge. The primary key declared below.
+	SellerProductsTable = "category_seller_products"
+	// SellerProductsInverseTable is the table name for the SellerProduct entity.
+	// It exists in this package in order to avoid circular dependency with the "sellerproduct" package.
+	SellerProductsInverseTable = "seller_products"
 )
 
 // Columns holds all SQL columns for category fields.
@@ -71,6 +78,12 @@ var ForeignKeys = []string{
 	"category_children",
 	"shop_category_categories",
 }
+
+var (
+	// SellerProductsPrimaryKey and SellerProductsColumn2 are the table columns denoting the
+	// primary key for the seller_products relation (M2M).
+	SellerProductsPrimaryKey = []string{"category_id", "seller_product_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

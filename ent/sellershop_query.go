@@ -6,7 +6,7 @@ import (
 	"bongo/ent/predicate"
 	"bongo/ent/sellerproduct"
 	"bongo/ent/sellershop"
-	"bongo/ent/sellershopproduct"
+	"bongo/ent/shopcategory"
 	"bongo/ent/user"
 	"context"
 	"database/sql/driver"
@@ -29,11 +29,11 @@ type SellerShopQuery struct {
 	fields     []string
 	predicates []predicate.SellerShop
 	// eager-loading edges.
-	withUser               *UserQuery
-	withAdmin              *UserQuery
-	withSellerProducts     *SellerProductQuery
-	withSellerShopProducts *SellerShopProductQuery
-	withFKs                bool
+	withUser            *UserQuery
+	withAdmin           *UserQuery
+	withGetShopCategory *ShopCategoryQuery
+	withSellerProducts  *SellerProductQuery
+	withFKs             bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -114,6 +114,28 @@ func (ssq *SellerShopQuery) QueryAdmin() *UserQuery {
 	return query
 }
 
+// QueryGetShopCategory chains the current query on the "get_shop_category" edge.
+func (ssq *SellerShopQuery) QueryGetShopCategory() *ShopCategoryQuery {
+	query := &ShopCategoryQuery{config: ssq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ssq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := ssq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(sellershop.Table, sellershop.FieldID, selector),
+			sqlgraph.To(shopcategory.Table, shopcategory.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, sellershop.GetShopCategoryTable, sellershop.GetShopCategoryColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ssq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QuerySellerProducts chains the current query on the "seller_products" edge.
 func (ssq *SellerShopQuery) QuerySellerProducts() *SellerProductQuery {
 	query := &SellerProductQuery{config: ssq.config}
@@ -129,28 +151,6 @@ func (ssq *SellerShopQuery) QuerySellerProducts() *SellerProductQuery {
 			sqlgraph.From(sellershop.Table, sellershop.FieldID, selector),
 			sqlgraph.To(sellerproduct.Table, sellerproduct.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, sellershop.SellerProductsTable, sellershop.SellerProductsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(ssq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QuerySellerShopProducts chains the current query on the "seller_shop_products" edge.
-func (ssq *SellerShopQuery) QuerySellerShopProducts() *SellerShopProductQuery {
-	query := &SellerShopProductQuery{config: ssq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := ssq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := ssq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(sellershop.Table, sellershop.FieldID, selector),
-			sqlgraph.To(sellershopproduct.Table, sellershopproduct.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, sellershop.SellerShopProductsTable, sellershop.SellerShopProductsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(ssq.driver.Dialect(), step)
 		return fromU, nil
@@ -334,15 +334,15 @@ func (ssq *SellerShopQuery) Clone() *SellerShopQuery {
 		return nil
 	}
 	return &SellerShopQuery{
-		config:                 ssq.config,
-		limit:                  ssq.limit,
-		offset:                 ssq.offset,
-		order:                  append([]OrderFunc{}, ssq.order...),
-		predicates:             append([]predicate.SellerShop{}, ssq.predicates...),
-		withUser:               ssq.withUser.Clone(),
-		withAdmin:              ssq.withAdmin.Clone(),
-		withSellerProducts:     ssq.withSellerProducts.Clone(),
-		withSellerShopProducts: ssq.withSellerShopProducts.Clone(),
+		config:              ssq.config,
+		limit:               ssq.limit,
+		offset:              ssq.offset,
+		order:               append([]OrderFunc{}, ssq.order...),
+		predicates:          append([]predicate.SellerShop{}, ssq.predicates...),
+		withUser:            ssq.withUser.Clone(),
+		withAdmin:           ssq.withAdmin.Clone(),
+		withGetShopCategory: ssq.withGetShopCategory.Clone(),
+		withSellerProducts:  ssq.withSellerProducts.Clone(),
 		// clone intermediate query.
 		sql:  ssq.sql.Clone(),
 		path: ssq.path,
@@ -371,6 +371,17 @@ func (ssq *SellerShopQuery) WithAdmin(opts ...func(*UserQuery)) *SellerShopQuery
 	return ssq
 }
 
+// WithGetShopCategory tells the query-builder to eager-load the nodes that are connected to
+// the "get_shop_category" edge. The optional arguments are used to configure the query builder of the edge.
+func (ssq *SellerShopQuery) WithGetShopCategory(opts ...func(*ShopCategoryQuery)) *SellerShopQuery {
+	query := &ShopCategoryQuery{config: ssq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	ssq.withGetShopCategory = query
+	return ssq
+}
+
 // WithSellerProducts tells the query-builder to eager-load the nodes that are connected to
 // the "seller_products" edge. The optional arguments are used to configure the query builder of the edge.
 func (ssq *SellerShopQuery) WithSellerProducts(opts ...func(*SellerProductQuery)) *SellerShopQuery {
@@ -379,17 +390,6 @@ func (ssq *SellerShopQuery) WithSellerProducts(opts ...func(*SellerProductQuery)
 		opt(query)
 	}
 	ssq.withSellerProducts = query
-	return ssq
-}
-
-// WithSellerShopProducts tells the query-builder to eager-load the nodes that are connected to
-// the "seller_shop_products" edge. The optional arguments are used to configure the query builder of the edge.
-func (ssq *SellerShopQuery) WithSellerShopProducts(opts ...func(*SellerShopProductQuery)) *SellerShopQuery {
-	query := &SellerShopProductQuery{config: ssq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	ssq.withSellerShopProducts = query
 	return ssq
 }
 
@@ -462,11 +462,11 @@ func (ssq *SellerShopQuery) sqlAll(ctx context.Context) ([]*SellerShop, error) {
 		loadedTypes = [4]bool{
 			ssq.withUser != nil,
 			ssq.withAdmin != nil,
+			ssq.withGetShopCategory != nil,
 			ssq.withSellerProducts != nil,
-			ssq.withSellerShopProducts != nil,
 		}
 	)
-	if ssq.withUser != nil || ssq.withAdmin != nil {
+	if ssq.withUser != nil || ssq.withAdmin != nil || ssq.withGetShopCategory != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -550,6 +550,35 @@ func (ssq *SellerShopQuery) sqlAll(ctx context.Context) ([]*SellerShop, error) {
 		}
 	}
 
+	if query := ssq.withGetShopCategory; query != nil {
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*SellerShop)
+		for i := range nodes {
+			if nodes[i].shop_category_seller_shops == nil {
+				continue
+			}
+			fk := *nodes[i].shop_category_seller_shops
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
+		}
+		query.Where(shopcategory.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "shop_category_seller_shops" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.GetShopCategory = n
+			}
+		}
+	}
+
 	if query := ssq.withSellerProducts; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*SellerShop)
@@ -576,35 +605,6 @@ func (ssq *SellerShopQuery) sqlAll(ctx context.Context) ([]*SellerShop, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "seller_shop_seller_products" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.SellerProducts = append(node.Edges.SellerProducts, n)
-		}
-	}
-
-	if query := ssq.withSellerShopProducts; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*SellerShop)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.SellerShopProducts = []*SellerShopProduct{}
-		}
-		query.withFKs = true
-		query.Where(predicate.SellerShopProduct(func(s *sql.Selector) {
-			s.Where(sql.InValues(sellershop.SellerShopProductsColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.seller_shop_seller_shop_products
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "seller_shop_seller_shop_products" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "seller_shop_seller_shop_products" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.SellerShopProducts = append(node.Edges.SellerShopProducts, n)
 		}
 	}
 

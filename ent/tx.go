@@ -40,8 +40,6 @@ type Tx struct {
 	SellerRequest *SellerRequestClient
 	// SellerShop is the client for interacting with the SellerShop builders.
 	SellerShop *SellerShopClient
-	// SellerShopProduct is the client for interacting with the SellerShopProduct builders.
-	SellerShopProduct *SellerShopProductClient
 	// ShopCategory is the client for interacting with the ShopCategory builders.
 	ShopCategory *ShopCategoryClient
 	// User is the client for interacting with the User builders.
@@ -197,7 +195,6 @@ func (tx *Tx) init() {
 	tx.SellerProductVariationValues = NewSellerProductVariationValuesClient(tx.config)
 	tx.SellerRequest = NewSellerRequestClient(tx.config)
 	tx.SellerShop = NewSellerShopClient(tx.config)
-	tx.SellerShopProduct = NewSellerShopProductClient(tx.config)
 	tx.ShopCategory = NewShopCategoryClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.UserLocation = NewUserLocationClient(tx.config)

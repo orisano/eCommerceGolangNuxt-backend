@@ -663,6 +663,20 @@ func AdminUserNameHasSuffix(v string) predicate.User {
 	})
 }
 
+// AdminUserNameIsNil applies the IsNil predicate on the "admin_user_name" field.
+func AdminUserNameIsNil() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldAdminUserName)))
+	})
+}
+
+// AdminUserNameNotNil applies the NotNil predicate on the "admin_user_name" field.
+func AdminUserNameNotNil() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldAdminUserName)))
+	})
+}
+
 // AdminUserNameEqualFold applies the EqualFold predicate on the "admin_user_name" field.
 func AdminUserNameEqualFold(v string) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
@@ -771,6 +785,20 @@ func AdminUserTokenHasPrefix(v string) predicate.User {
 func AdminUserTokenHasSuffix(v string) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.HasSuffix(s.C(FieldAdminUserToken), v))
+	})
+}
+
+// AdminUserTokenIsNil applies the IsNil predicate on the "admin_user_token" field.
+func AdminUserTokenIsNil() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldAdminUserToken)))
+	})
+}
+
+// AdminUserTokenNotNil applies the NotNil predicate on the "admin_user_token" field.
+func AdminUserTokenNotNil() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldAdminUserToken)))
 	})
 }
 

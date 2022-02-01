@@ -1,9 +1,11 @@
 package myseller
 
 import (
+	"bongo/db"
 	"bongo/mixin"
-	"bongo/model"
+	"context"
 	"github.com/gofiber/fiber/v2"
+	"strconv"
 )
 
 func sellerMiddleware(c *fiber.Ctx) error {
@@ -13,10 +15,15 @@ func sellerMiddleware(c *fiber.Ctx) error {
 		c.Status(fiber.StatusForbidden)
 	}
 
-	var user model.User
-	result := model.DB.First(&user, "id = ?", data.Issuer)
-	if result.Error != nil || !user.Seller {
-		return c.SendStatus(401)
+	//var user model.User
+	//result := model.DB.First(&user, "id = ?", data.Issuer)
+	//if result.Error != nil || !user.Seller {
+	//	return c.SendStatus(401)
+	//}
+	id, _ := strconv.Atoi(data.Issuer)
+	user, err2 := db.Client.User.Get(context.Background(),id)
+	if err2 != nil || !user.Seller {
+		return c.Status(401).SendString("You are not allowed.")
 	}
 	c.Locals("AuthID", user.ID)
 	return c.Next()
@@ -24,6 +31,7 @@ func sellerMiddleware(c *fiber.Ctx) error {
 func SellerRoutes(app *fiber.App) {
 	seller := app.Group("/api/seller", sellerMiddleware)
 	seller.Get("/shop/:id", SingleSellerShops)
+	seller.Get("/shops/all", AllSellerShops)
 	seller.Get("/shops/active/all", AllSellerActiveShops)
 	seller.Get("/shops/inactive/all", AllSellerInActiveShops)
 	seller.Get("/shops/delete/all", AllSellerDeleteShops)
@@ -34,7 +42,7 @@ func SellerRoutes(app *fiber.App) {
 	seller.Delete("/shop/delete/:id", DeleteShops)
 	seller.Get("/shop/availability/check", CheckShopAvailability)
 	seller.Get("/brand/by/shop",BrandByShop)
-	seller.Get("/category/by/shop",CategoryByShop)
+	seller.Get("/category/by/shop/:id",CategoryByShop)
 	seller.Get("/variation",VariationData)
 	//	product
 	seller.Get("/product/min/all", AllSellerProductsMin)
@@ -44,7 +52,7 @@ func SellerRoutes(app *fiber.App) {
 	seller.Post("/product/create/:shopID", CreateProduct)
 	seller.Delete("/product/soft/delete/:id", SoftDeleteProduct)
 	seller.Delete("/product/delete/:id", DeleteProduct)
-	seller.Put("/product/recover/:id", RecoverProduct)
+	seller.Patch("/product/recover/:id", RecoverProduct)
 	seller.Get("/product/:id", SingleProduct)
 	seller.Delete("/product/edit/:product_id/:image_id/image/delete", EditProductImageDelete)
 	seller.Patch("/product/edit/:product_id/:image_id/image/display", EditProductImageDisplay)
@@ -58,4 +66,6 @@ func SellerRoutes(app *fiber.App) {
 	seller.Get("/my/order",MyNewOrder)
 	seller.Get("/order/income/statistic",OrderStatistic)
 	seller.Get("/checkout/product/details/:id",DetailsCheckoutProduct)
+
+	seller.Get("/shop/products/:shopID",AllShopProducts)
 }

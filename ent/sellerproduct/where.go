@@ -165,7 +165,7 @@ func OfferPriceEnd(v time.Time) predicate.SellerProduct {
 }
 
 // NextStock applies equality check predicate on the "next_stock" field. It's identical to NextStockEQ.
-func NextStock(v string) predicate.SellerProduct {
+func NextStock(v time.Time) predicate.SellerProduct {
 	return predicate.SellerProduct(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldNextStock), v))
 	})
@@ -857,20 +857,6 @@ func OfferPriceLTE(v int) predicate.SellerProduct {
 	})
 }
 
-// OfferPriceIsNil applies the IsNil predicate on the "offer_price" field.
-func OfferPriceIsNil() predicate.SellerProduct {
-	return predicate.SellerProduct(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldOfferPrice)))
-	})
-}
-
-// OfferPriceNotNil applies the NotNil predicate on the "offer_price" field.
-func OfferPriceNotNil() predicate.SellerProduct {
-	return predicate.SellerProduct(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldOfferPrice)))
-	})
-}
-
 // OfferPriceStartEQ applies the EQ predicate on the "offer_price_start" field.
 func OfferPriceStartEQ(v time.Time) predicate.SellerProduct {
 	return predicate.SellerProduct(func(s *sql.Selector) {
@@ -1052,21 +1038,21 @@ func OfferPriceEndNotNil() predicate.SellerProduct {
 }
 
 // NextStockEQ applies the EQ predicate on the "next_stock" field.
-func NextStockEQ(v string) predicate.SellerProduct {
+func NextStockEQ(v time.Time) predicate.SellerProduct {
 	return predicate.SellerProduct(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldNextStock), v))
 	})
 }
 
 // NextStockNEQ applies the NEQ predicate on the "next_stock" field.
-func NextStockNEQ(v string) predicate.SellerProduct {
+func NextStockNEQ(v time.Time) predicate.SellerProduct {
 	return predicate.SellerProduct(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldNextStock), v))
 	})
 }
 
 // NextStockIn applies the In predicate on the "next_stock" field.
-func NextStockIn(vs ...string) predicate.SellerProduct {
+func NextStockIn(vs ...time.Time) predicate.SellerProduct {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -1083,7 +1069,7 @@ func NextStockIn(vs ...string) predicate.SellerProduct {
 }
 
 // NextStockNotIn applies the NotIn predicate on the "next_stock" field.
-func NextStockNotIn(vs ...string) predicate.SellerProduct {
+func NextStockNotIn(vs ...time.Time) predicate.SellerProduct {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -1100,51 +1086,30 @@ func NextStockNotIn(vs ...string) predicate.SellerProduct {
 }
 
 // NextStockGT applies the GT predicate on the "next_stock" field.
-func NextStockGT(v string) predicate.SellerProduct {
+func NextStockGT(v time.Time) predicate.SellerProduct {
 	return predicate.SellerProduct(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldNextStock), v))
 	})
 }
 
 // NextStockGTE applies the GTE predicate on the "next_stock" field.
-func NextStockGTE(v string) predicate.SellerProduct {
+func NextStockGTE(v time.Time) predicate.SellerProduct {
 	return predicate.SellerProduct(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldNextStock), v))
 	})
 }
 
 // NextStockLT applies the LT predicate on the "next_stock" field.
-func NextStockLT(v string) predicate.SellerProduct {
+func NextStockLT(v time.Time) predicate.SellerProduct {
 	return predicate.SellerProduct(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldNextStock), v))
 	})
 }
 
 // NextStockLTE applies the LTE predicate on the "next_stock" field.
-func NextStockLTE(v string) predicate.SellerProduct {
+func NextStockLTE(v time.Time) predicate.SellerProduct {
 	return predicate.SellerProduct(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldNextStock), v))
-	})
-}
-
-// NextStockContains applies the Contains predicate on the "next_stock" field.
-func NextStockContains(v string) predicate.SellerProduct {
-	return predicate.SellerProduct(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldNextStock), v))
-	})
-}
-
-// NextStockHasPrefix applies the HasPrefix predicate on the "next_stock" field.
-func NextStockHasPrefix(v string) predicate.SellerProduct {
-	return predicate.SellerProduct(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldNextStock), v))
-	})
-}
-
-// NextStockHasSuffix applies the HasSuffix predicate on the "next_stock" field.
-func NextStockHasSuffix(v string) predicate.SellerProduct {
-	return predicate.SellerProduct(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldNextStock), v))
 	})
 }
 
@@ -1159,20 +1124,6 @@ func NextStockIsNil() predicate.SellerProduct {
 func NextStockNotNil() predicate.SellerProduct {
 	return predicate.SellerProduct(func(s *sql.Selector) {
 		s.Where(sql.NotNull(s.C(FieldNextStock)))
-	})
-}
-
-// NextStockEqualFold applies the EqualFold predicate on the "next_stock" field.
-func NextStockEqualFold(v string) predicate.SellerProduct {
-	return predicate.SellerProduct(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldNextStock), v))
-	})
-}
-
-// NextStockContainsFold applies the ContainsFold predicate on the "next_stock" field.
-func NextStockContainsFold(v string) predicate.SellerProduct {
-	return predicate.SellerProduct(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldNextStock), v))
 	})
 }
 
@@ -1502,25 +1453,53 @@ func HasSellerProductImagesWith(preds ...predicate.SellerProductImage) predicate
 	})
 }
 
-// HasSellerProductCategories applies the HasEdge predicate on the "seller_product_categories" edge.
-func HasSellerProductCategories() predicate.SellerProduct {
+// HasCategories applies the HasEdge predicate on the "categories" edge.
+func HasCategories() predicate.SellerProduct {
 	return predicate.SellerProduct(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(SellerProductCategoriesTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, SellerProductCategoriesTable, SellerProductCategoriesColumn),
+			sqlgraph.To(CategoriesTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, CategoriesTable, CategoriesPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasSellerProductCategoriesWith applies the HasEdge predicate on the "seller_product_categories" edge with a given conditions (other predicates).
-func HasSellerProductCategoriesWith(preds ...predicate.SellerProductCategory) predicate.SellerProduct {
+// HasCategoriesWith applies the HasEdge predicate on the "categories" edge with a given conditions (other predicates).
+func HasCategoriesWith(preds ...predicate.Category) predicate.SellerProduct {
 	return predicate.SellerProduct(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(SellerProductCategoriesInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, SellerProductCategoriesTable, SellerProductCategoriesColumn),
+			sqlgraph.To(CategoriesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, CategoriesTable, CategoriesPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasShop applies the HasEdge predicate on the "shop" edge.
+func HasShop() predicate.SellerProduct {
+	return predicate.SellerProduct(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ShopTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ShopTable, ShopColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasShopWith applies the HasEdge predicate on the "shop" edge with a given conditions (other predicates).
+func HasShopWith(preds ...predicate.SellerShop) predicate.SellerProduct {
+	return predicate.SellerProduct(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ShopInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ShopTable, ShopColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -1605,34 +1584,6 @@ func HasSellerProductVariationsWith(preds ...predicate.SellerProductVariation) p
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(SellerProductVariationsInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, SellerProductVariationsTable, SellerProductVariationsColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasSellerShopProducts applies the HasEdge predicate on the "seller_shop_products" edge.
-func HasSellerShopProducts() predicate.SellerProduct {
-	return predicate.SellerProduct(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(SellerShopProductsTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, SellerShopProductsTable, SellerShopProductsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasSellerShopProductsWith applies the HasEdge predicate on the "seller_shop_products" edge with a given conditions (other predicates).
-func HasSellerShopProductsWith(preds ...predicate.SellerShopProduct) predicate.SellerProduct {
-	return predicate.SellerProduct(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(SellerShopProductsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, SellerShopProductsTable, SellerShopProductsColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

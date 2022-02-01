@@ -23,7 +23,6 @@ import (
 	"bongo/ent/sellerproductvariationvalues"
 	"bongo/ent/sellerrequest"
 	"bongo/ent/sellershop"
-	"bongo/ent/sellershopproduct"
 	"bongo/ent/shopcategory"
 	"bongo/ent/user"
 	"bongo/ent/userlocation"
@@ -66,8 +65,6 @@ type Client struct {
 	SellerRequest *SellerRequestClient
 	// SellerShop is the client for interacting with the SellerShop builders.
 	SellerShop *SellerShopClient
-	// SellerShopProduct is the client for interacting with the SellerShopProduct builders.
-	SellerShopProduct *SellerShopProductClient
 	// ShopCategory is the client for interacting with the ShopCategory builders.
 	ShopCategory *ShopCategoryClient
 	// User is the client for interacting with the User builders.
@@ -101,7 +98,6 @@ func (c *Client) init() {
 	c.SellerProductVariationValues = NewSellerProductVariationValuesClient(c.config)
 	c.SellerRequest = NewSellerRequestClient(c.config)
 	c.SellerShop = NewSellerShopClient(c.config)
-	c.SellerShopProduct = NewSellerShopProductClient(c.config)
 	c.ShopCategory = NewShopCategoryClient(c.config)
 	c.User = NewUserClient(c.config)
 	c.UserLocation = NewUserLocationClient(c.config)
@@ -152,7 +148,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		SellerProductVariationValues: NewSellerProductVariationValuesClient(cfg),
 		SellerRequest:                NewSellerRequestClient(cfg),
 		SellerShop:                   NewSellerShopClient(cfg),
-		SellerShopProduct:            NewSellerShopProductClient(cfg),
 		ShopCategory:                 NewShopCategoryClient(cfg),
 		User:                         NewUserClient(cfg),
 		UserLocation:                 NewUserLocationClient(cfg),
@@ -188,7 +183,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		SellerProductVariationValues: NewSellerProductVariationValuesClient(cfg),
 		SellerRequest:                NewSellerRequestClient(cfg),
 		SellerShop:                   NewSellerShopClient(cfg),
-		SellerShopProduct:            NewSellerShopProductClient(cfg),
 		ShopCategory:                 NewShopCategoryClient(cfg),
 		User:                         NewUserClient(cfg),
 		UserLocation:                 NewUserLocationClient(cfg),
@@ -235,7 +229,6 @@ func (c *Client) Use(hooks ...Hook) {
 	c.SellerProductVariationValues.Use(hooks...)
 	c.SellerRequest.Use(hooks...)
 	c.SellerShop.Use(hooks...)
-	c.SellerShopProduct.Use(hooks...)
 	c.ShopCategory.Use(hooks...)
 	c.User.Use(hooks...)
 	c.UserLocation.Use(hooks...)
@@ -878,6 +871,22 @@ func (c *CategoryClient) QueryProductCategories(ca *Category) *SellerProductCate
 	return query
 }
 
+// QuerySellerProducts queries the seller_products edge of a Category.
+func (c *CategoryClient) QuerySellerProducts(ca *Category) *SellerProductQuery {
+	query := &SellerProductQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ca.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(category.Table, category.FieldID, id),
+			sqlgraph.To(sellerproduct.Table, sellerproduct.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, category.SellerProductsTable, category.SellerProductsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ca.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *CategoryClient) Hooks() []Hook {
 	return c.hooks.Category
@@ -1340,15 +1349,31 @@ func (c *SellerProductClient) QuerySellerProductImages(sp *SellerProduct) *Selle
 	return query
 }
 
-// QuerySellerProductCategories queries the seller_product_categories edge of a SellerProduct.
-func (c *SellerProductClient) QuerySellerProductCategories(sp *SellerProduct) *SellerProductCategoryQuery {
-	query := &SellerProductCategoryQuery{config: c.config}
+// QueryCategories queries the categories edge of a SellerProduct.
+func (c *SellerProductClient) QueryCategories(sp *SellerProduct) *CategoryQuery {
+	query := &CategoryQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := sp.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(sellerproduct.Table, sellerproduct.FieldID, id),
-			sqlgraph.To(sellerproductcategory.Table, sellerproductcategory.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, sellerproduct.SellerProductCategoriesTable, sellerproduct.SellerProductCategoriesColumn),
+			sqlgraph.To(category.Table, category.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, sellerproduct.CategoriesTable, sellerproduct.CategoriesPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(sp.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryShop queries the shop edge of a SellerProduct.
+func (c *SellerProductClient) QueryShop(sp *SellerProduct) *SellerShopQuery {
+	query := &SellerShopQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := sp.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(sellerproduct.Table, sellerproduct.FieldID, id),
+			sqlgraph.To(sellershop.Table, sellershop.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, sellerproduct.ShopTable, sellerproduct.ShopColumn),
 		)
 		fromV = sqlgraph.Neighbors(sp.driver.Dialect(), step)
 		return fromV, nil
@@ -1397,22 +1422,6 @@ func (c *SellerProductClient) QuerySellerProductVariations(sp *SellerProduct) *S
 			sqlgraph.From(sellerproduct.Table, sellerproduct.FieldID, id),
 			sqlgraph.To(sellerproductvariation.Table, sellerproductvariation.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, sellerproduct.SellerProductVariationsTable, sellerproduct.SellerProductVariationsColumn),
-		)
-		fromV = sqlgraph.Neighbors(sp.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySellerShopProducts queries the seller_shop_products edge of a SellerProduct.
-func (c *SellerProductClient) QuerySellerShopProducts(sp *SellerProduct) *SellerShopProductQuery {
-	query := &SellerShopProductQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := sp.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(sellerproduct.Table, sellerproduct.FieldID, id),
-			sqlgraph.To(sellershopproduct.Table, sellershopproduct.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, sellerproduct.SellerShopProductsTable, sellerproduct.SellerShopProductsColumn),
 		)
 		fromV = sqlgraph.Neighbors(sp.driver.Dialect(), step)
 		return fromV, nil
@@ -1508,38 +1517,6 @@ func (c *SellerProductCategoryClient) GetX(ctx context.Context, id int) *SellerP
 		panic(err)
 	}
 	return obj
-}
-
-// QuerySellerProduct queries the seller_product edge of a SellerProductCategory.
-func (c *SellerProductCategoryClient) QuerySellerProduct(spc *SellerProductCategory) *SellerProductQuery {
-	query := &SellerProductQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := spc.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(sellerproductcategory.Table, sellerproductcategory.FieldID, id),
-			sqlgraph.To(sellerproduct.Table, sellerproduct.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, sellerproductcategory.SellerProductTable, sellerproductcategory.SellerProductColumn),
-		)
-		fromV = sqlgraph.Neighbors(spc.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryCategory queries the category edge of a SellerProductCategory.
-func (c *SellerProductCategoryClient) QueryCategory(spc *SellerProductCategory) *CategoryQuery {
-	query := &CategoryQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := spc.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(sellerproductcategory.Table, sellerproductcategory.FieldID, id),
-			sqlgraph.To(category.Table, category.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, sellerproductcategory.CategoryTable, sellerproductcategory.CategoryColumn),
-		)
-		fromV = sqlgraph.Neighbors(spc.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // Hooks returns the client hooks.
@@ -2168,6 +2145,22 @@ func (c *SellerShopClient) QueryAdmin(ss *SellerShop) *UserQuery {
 	return query
 }
 
+// QueryGetShopCategory queries the get_shop_category edge of a SellerShop.
+func (c *SellerShopClient) QueryGetShopCategory(ss *SellerShop) *ShopCategoryQuery {
+	query := &ShopCategoryQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ss.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(sellershop.Table, sellershop.FieldID, id),
+			sqlgraph.To(shopcategory.Table, shopcategory.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, sellershop.GetShopCategoryTable, sellershop.GetShopCategoryColumn),
+		)
+		fromV = sqlgraph.Neighbors(ss.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QuerySellerProducts queries the seller_products edge of a SellerShop.
 func (c *SellerShopClient) QuerySellerProducts(ss *SellerShop) *SellerProductQuery {
 	query := &SellerProductQuery{config: c.config}
@@ -2184,147 +2177,9 @@ func (c *SellerShopClient) QuerySellerProducts(ss *SellerShop) *SellerProductQue
 	return query
 }
 
-// QuerySellerShopProducts queries the seller_shop_products edge of a SellerShop.
-func (c *SellerShopClient) QuerySellerShopProducts(ss *SellerShop) *SellerShopProductQuery {
-	query := &SellerShopProductQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := ss.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(sellershop.Table, sellershop.FieldID, id),
-			sqlgraph.To(sellershopproduct.Table, sellershopproduct.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, sellershop.SellerShopProductsTable, sellershop.SellerShopProductsColumn),
-		)
-		fromV = sqlgraph.Neighbors(ss.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *SellerShopClient) Hooks() []Hook {
 	return c.hooks.SellerShop
-}
-
-// SellerShopProductClient is a client for the SellerShopProduct schema.
-type SellerShopProductClient struct {
-	config
-}
-
-// NewSellerShopProductClient returns a client for the SellerShopProduct from the given config.
-func NewSellerShopProductClient(c config) *SellerShopProductClient {
-	return &SellerShopProductClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `sellershopproduct.Hooks(f(g(h())))`.
-func (c *SellerShopProductClient) Use(hooks ...Hook) {
-	c.hooks.SellerShopProduct = append(c.hooks.SellerShopProduct, hooks...)
-}
-
-// Create returns a create builder for SellerShopProduct.
-func (c *SellerShopProductClient) Create() *SellerShopProductCreate {
-	mutation := newSellerShopProductMutation(c.config, OpCreate)
-	return &SellerShopProductCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of SellerShopProduct entities.
-func (c *SellerShopProductClient) CreateBulk(builders ...*SellerShopProductCreate) *SellerShopProductCreateBulk {
-	return &SellerShopProductCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for SellerShopProduct.
-func (c *SellerShopProductClient) Update() *SellerShopProductUpdate {
-	mutation := newSellerShopProductMutation(c.config, OpUpdate)
-	return &SellerShopProductUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *SellerShopProductClient) UpdateOne(ssp *SellerShopProduct) *SellerShopProductUpdateOne {
-	mutation := newSellerShopProductMutation(c.config, OpUpdateOne, withSellerShopProduct(ssp))
-	return &SellerShopProductUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *SellerShopProductClient) UpdateOneID(id int) *SellerShopProductUpdateOne {
-	mutation := newSellerShopProductMutation(c.config, OpUpdateOne, withSellerShopProductID(id))
-	return &SellerShopProductUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for SellerShopProduct.
-func (c *SellerShopProductClient) Delete() *SellerShopProductDelete {
-	mutation := newSellerShopProductMutation(c.config, OpDelete)
-	return &SellerShopProductDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a delete builder for the given entity.
-func (c *SellerShopProductClient) DeleteOne(ssp *SellerShopProduct) *SellerShopProductDeleteOne {
-	return c.DeleteOneID(ssp.ID)
-}
-
-// DeleteOneID returns a delete builder for the given id.
-func (c *SellerShopProductClient) DeleteOneID(id int) *SellerShopProductDeleteOne {
-	builder := c.Delete().Where(sellershopproduct.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &SellerShopProductDeleteOne{builder}
-}
-
-// Query returns a query builder for SellerShopProduct.
-func (c *SellerShopProductClient) Query() *SellerShopProductQuery {
-	return &SellerShopProductQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a SellerShopProduct entity by its id.
-func (c *SellerShopProductClient) Get(ctx context.Context, id int) (*SellerShopProduct, error) {
-	return c.Query().Where(sellershopproduct.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *SellerShopProductClient) GetX(ctx context.Context, id int) *SellerShopProduct {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QuerySellerShop queries the seller_shop edge of a SellerShopProduct.
-func (c *SellerShopProductClient) QuerySellerShop(ssp *SellerShopProduct) *SellerShopQuery {
-	query := &SellerShopQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := ssp.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(sellershopproduct.Table, sellershopproduct.FieldID, id),
-			sqlgraph.To(sellershop.Table, sellershop.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, sellershopproduct.SellerShopTable, sellershopproduct.SellerShopColumn),
-		)
-		fromV = sqlgraph.Neighbors(ssp.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySellerProduct queries the seller_product edge of a SellerShopProduct.
-func (c *SellerShopProductClient) QuerySellerProduct(ssp *SellerShopProduct) *SellerProductQuery {
-	query := &SellerProductQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := ssp.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(sellershopproduct.Table, sellershopproduct.FieldID, id),
-			sqlgraph.To(sellerproduct.Table, sellerproduct.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, sellershopproduct.SellerProductTable, sellershopproduct.SellerProductColumn),
-		)
-		fromV = sqlgraph.Neighbors(ssp.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *SellerShopProductClient) Hooks() []Hook {
-	return c.hooks.SellerShopProduct
 }
 
 // ShopCategoryClient is a client for the ShopCategory schema.
@@ -2437,6 +2292,22 @@ func (c *ShopCategoryClient) QuerySellerRequests(sc *ShopCategory) *SellerReques
 			sqlgraph.From(shopcategory.Table, shopcategory.FieldID, id),
 			sqlgraph.To(sellerrequest.Table, sellerrequest.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, shopcategory.SellerRequestsTable, shopcategory.SellerRequestsColumn),
+		)
+		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySellerShops queries the seller_shops edge of a ShopCategory.
+func (c *ShopCategoryClient) QuerySellerShops(sc *ShopCategory) *SellerShopQuery {
+	query := &SellerShopQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := sc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(shopcategory.Table, shopcategory.FieldID, id),
+			sqlgraph.To(sellershop.Table, sellershop.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, shopcategory.SellerShopsTable, shopcategory.SellerShopsColumn),
 		)
 		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
 		return fromV, nil

@@ -190,19 +190,6 @@ func (f SellerShopFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return f(ctx, mv)
 }
 
-// The SellerShopProductFunc type is an adapter to allow the use of ordinary
-// function as SellerShopProduct mutator.
-type SellerShopProductFunc func(context.Context, *ent.SellerShopProductMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f SellerShopProductFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.SellerShopProductMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SellerShopProductMutation", m)
-	}
-	return f(ctx, mv)
-}
-
 // The ShopCategoryFunc type is an adapter to allow the use of ordinary
 // function as ShopCategory mutator.
 type ShopCategoryFunc func(context.Context, *ent.ShopCategoryMutation) (ent.Value, error)

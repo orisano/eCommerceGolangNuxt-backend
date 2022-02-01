@@ -44,9 +44,11 @@ type CategoryEdges struct {
 	Children []*Category `json:"children,omitempty"`
 	// ProductCategories holds the value of the product_categories edge.
 	ProductCategories []*SellerProductCategory `json:"product_categories,omitempty"`
+	// SellerProducts holds the value of the seller_products edge.
+	SellerProducts []*SellerProduct `json:"seller_products,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // ShopCategoryOrErr returns the ShopCategory value or an error if the edge
@@ -93,6 +95,15 @@ func (e CategoryEdges) ProductCategoriesOrErr() ([]*SellerProductCategory, error
 		return e.ProductCategories, nil
 	}
 	return nil, &NotLoadedError{edge: "product_categories"}
+}
+
+// SellerProductsOrErr returns the SellerProducts value or an error if the edge
+// was not loaded in eager-loading.
+func (e CategoryEdges) SellerProductsOrErr() ([]*SellerProduct, error) {
+	if e.loadedTypes[4] {
+		return e.SellerProducts, nil
+	}
+	return nil, &NotLoadedError{edge: "seller_products"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -199,6 +210,11 @@ func (c *Category) QueryChildren() *CategoryQuery {
 // QueryProductCategories queries the "product_categories" edge of the Category entity.
 func (c *Category) QueryProductCategories() *SellerProductCategoryQuery {
 	return (&CategoryClient{config: c.config}).QueryProductCategories(c)
+}
+
+// QuerySellerProducts queries the "seller_products" edge of the Category entity.
+func (c *Category) QuerySellerProducts() *SellerProductQuery {
+	return (&CategoryClient{config: c.config}).QuerySellerProducts(c)
 }
 
 // Update returns a builder for updating this Category.

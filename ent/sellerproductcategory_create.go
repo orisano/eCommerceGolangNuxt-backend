@@ -3,8 +3,6 @@
 package ent
 
 import (
-	"bongo/ent/category"
-	"bongo/ent/sellerproduct"
 	"bongo/ent/sellerproductcategory"
 	"context"
 	"errors"
@@ -62,44 +60,6 @@ func (spcc *SellerProductCategoryCreate) SetNillableDeletedAt(t *time.Time) *Sel
 		spcc.SetDeletedAt(*t)
 	}
 	return spcc
-}
-
-// SetSellerProductID sets the "seller_product" edge to the SellerProduct entity by ID.
-func (spcc *SellerProductCategoryCreate) SetSellerProductID(id int) *SellerProductCategoryCreate {
-	spcc.mutation.SetSellerProductID(id)
-	return spcc
-}
-
-// SetNillableSellerProductID sets the "seller_product" edge to the SellerProduct entity by ID if the given value is not nil.
-func (spcc *SellerProductCategoryCreate) SetNillableSellerProductID(id *int) *SellerProductCategoryCreate {
-	if id != nil {
-		spcc = spcc.SetSellerProductID(*id)
-	}
-	return spcc
-}
-
-// SetSellerProduct sets the "seller_product" edge to the SellerProduct entity.
-func (spcc *SellerProductCategoryCreate) SetSellerProduct(s *SellerProduct) *SellerProductCategoryCreate {
-	return spcc.SetSellerProductID(s.ID)
-}
-
-// SetCategoryID sets the "category" edge to the Category entity by ID.
-func (spcc *SellerProductCategoryCreate) SetCategoryID(id int) *SellerProductCategoryCreate {
-	spcc.mutation.SetCategoryID(id)
-	return spcc
-}
-
-// SetNillableCategoryID sets the "category" edge to the Category entity by ID if the given value is not nil.
-func (spcc *SellerProductCategoryCreate) SetNillableCategoryID(id *int) *SellerProductCategoryCreate {
-	if id != nil {
-		spcc = spcc.SetCategoryID(*id)
-	}
-	return spcc
-}
-
-// SetCategory sets the "category" edge to the Category entity.
-func (spcc *SellerProductCategoryCreate) SetCategory(c *Category) *SellerProductCategoryCreate {
-	return spcc.SetCategoryID(c.ID)
 }
 
 // Mutation returns the SellerProductCategoryMutation object of the builder.
@@ -241,46 +201,6 @@ func (spcc *SellerProductCategoryCreate) createSpec() (*SellerProductCategory, *
 			Column: sellerproductcategory.FieldDeletedAt,
 		})
 		_node.DeletedAt = &value
-	}
-	if nodes := spcc.mutation.SellerProductIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   sellerproductcategory.SellerProductTable,
-			Columns: []string{sellerproductcategory.SellerProductColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellerproduct.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.seller_product_seller_product_categories = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := spcc.mutation.CategoryIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   sellerproductcategory.CategoryTable,
-			Columns: []string{sellerproductcategory.CategoryColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: category.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.category_product_categories = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

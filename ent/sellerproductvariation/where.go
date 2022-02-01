@@ -116,7 +116,7 @@ func Quantity(v int) predicate.SellerProductVariation {
 }
 
 // Image applies equality check predicate on the "image" field. It's identical to ImageEQ.
-func Image(v int) predicate.SellerProductVariation {
+func Image(v string) predicate.SellerProductVariation {
 	return predicate.SellerProductVariation(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldImage), v))
 	})
@@ -372,21 +372,21 @@ func QuantityLTE(v int) predicate.SellerProductVariation {
 }
 
 // ImageEQ applies the EQ predicate on the "image" field.
-func ImageEQ(v int) predicate.SellerProductVariation {
+func ImageEQ(v string) predicate.SellerProductVariation {
 	return predicate.SellerProductVariation(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldImage), v))
 	})
 }
 
 // ImageNEQ applies the NEQ predicate on the "image" field.
-func ImageNEQ(v int) predicate.SellerProductVariation {
+func ImageNEQ(v string) predicate.SellerProductVariation {
 	return predicate.SellerProductVariation(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldImage), v))
 	})
 }
 
 // ImageIn applies the In predicate on the "image" field.
-func ImageIn(vs ...int) predicate.SellerProductVariation {
+func ImageIn(vs ...string) predicate.SellerProductVariation {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -403,7 +403,7 @@ func ImageIn(vs ...int) predicate.SellerProductVariation {
 }
 
 // ImageNotIn applies the NotIn predicate on the "image" field.
-func ImageNotIn(vs ...int) predicate.SellerProductVariation {
+func ImageNotIn(vs ...string) predicate.SellerProductVariation {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -420,30 +420,65 @@ func ImageNotIn(vs ...int) predicate.SellerProductVariation {
 }
 
 // ImageGT applies the GT predicate on the "image" field.
-func ImageGT(v int) predicate.SellerProductVariation {
+func ImageGT(v string) predicate.SellerProductVariation {
 	return predicate.SellerProductVariation(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldImage), v))
 	})
 }
 
 // ImageGTE applies the GTE predicate on the "image" field.
-func ImageGTE(v int) predicate.SellerProductVariation {
+func ImageGTE(v string) predicate.SellerProductVariation {
 	return predicate.SellerProductVariation(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldImage), v))
 	})
 }
 
 // ImageLT applies the LT predicate on the "image" field.
-func ImageLT(v int) predicate.SellerProductVariation {
+func ImageLT(v string) predicate.SellerProductVariation {
 	return predicate.SellerProductVariation(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldImage), v))
 	})
 }
 
 // ImageLTE applies the LTE predicate on the "image" field.
-func ImageLTE(v int) predicate.SellerProductVariation {
+func ImageLTE(v string) predicate.SellerProductVariation {
 	return predicate.SellerProductVariation(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldImage), v))
+	})
+}
+
+// ImageContains applies the Contains predicate on the "image" field.
+func ImageContains(v string) predicate.SellerProductVariation {
+	return predicate.SellerProductVariation(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldImage), v))
+	})
+}
+
+// ImageHasPrefix applies the HasPrefix predicate on the "image" field.
+func ImageHasPrefix(v string) predicate.SellerProductVariation {
+	return predicate.SellerProductVariation(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldImage), v))
+	})
+}
+
+// ImageHasSuffix applies the HasSuffix predicate on the "image" field.
+func ImageHasSuffix(v string) predicate.SellerProductVariation {
+	return predicate.SellerProductVariation(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldImage), v))
+	})
+}
+
+// ImageEqualFold applies the EqualFold predicate on the "image" field.
+func ImageEqualFold(v string) predicate.SellerProductVariation {
+	return predicate.SellerProductVariation(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldImage), v))
+	})
+}
+
+// ImageContainsFold applies the ContainsFold predicate on the "image" field.
+func ImageContainsFold(v string) predicate.SellerProductVariation {
+	return predicate.SellerProductVariation(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldImage), v))
 	})
 }
 

@@ -115,6 +115,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultOfferPrice holds the default value on creation for the "offer_price" field.
+	DefaultOfferPrice int
 	// DefaultReceived holds the default value on creation for the "received" field.
 	DefaultReceived bool
 	// DefaultStatus holds the default value on creation for the "status" field.

@@ -114,9 +114,37 @@ func (uu *UserUpdate) SetAdminUserName(s string) *UserUpdate {
 	return uu
 }
 
+// SetNillableAdminUserName sets the "admin_user_name" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableAdminUserName(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetAdminUserName(*s)
+	}
+	return uu
+}
+
+// ClearAdminUserName clears the value of the "admin_user_name" field.
+func (uu *UserUpdate) ClearAdminUserName() *UserUpdate {
+	uu.mutation.ClearAdminUserName()
+	return uu
+}
+
 // SetAdminUserToken sets the "admin_user_token" field.
 func (uu *UserUpdate) SetAdminUserToken(s string) *UserUpdate {
 	uu.mutation.SetAdminUserToken(s)
+	return uu
+}
+
+// SetNillableAdminUserToken sets the "admin_user_token" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableAdminUserToken(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetAdminUserToken(*s)
+	}
+	return uu
+}
+
+// ClearAdminUserToken clears the value of the "admin_user_token" field.
+func (uu *UserUpdate) ClearAdminUserToken() *UserUpdate {
+	uu.mutation.ClearAdminUserToken()
 	return uu
 }
 
@@ -628,10 +656,22 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldAdminUserName,
 		})
 	}
+	if uu.mutation.AdminUserNameCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: user.FieldAdminUserName,
+		})
+	}
 	if value, ok := uu.mutation.AdminUserToken(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
+			Column: user.FieldAdminUserToken,
+		})
+	}
+	if uu.mutation.AdminUserTokenCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
 			Column: user.FieldAdminUserToken,
 		})
 	}
@@ -1240,9 +1280,37 @@ func (uuo *UserUpdateOne) SetAdminUserName(s string) *UserUpdateOne {
 	return uuo
 }
 
+// SetNillableAdminUserName sets the "admin_user_name" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableAdminUserName(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetAdminUserName(*s)
+	}
+	return uuo
+}
+
+// ClearAdminUserName clears the value of the "admin_user_name" field.
+func (uuo *UserUpdateOne) ClearAdminUserName() *UserUpdateOne {
+	uuo.mutation.ClearAdminUserName()
+	return uuo
+}
+
 // SetAdminUserToken sets the "admin_user_token" field.
 func (uuo *UserUpdateOne) SetAdminUserToken(s string) *UserUpdateOne {
 	uuo.mutation.SetAdminUserToken(s)
+	return uuo
+}
+
+// SetNillableAdminUserToken sets the "admin_user_token" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableAdminUserToken(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetAdminUserToken(*s)
+	}
+	return uuo
+}
+
+// ClearAdminUserToken clears the value of the "admin_user_token" field.
+func (uuo *UserUpdateOne) ClearAdminUserToken() *UserUpdateOne {
+	uuo.mutation.ClearAdminUserToken()
 	return uuo
 }
 
@@ -1778,10 +1846,22 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Column: user.FieldAdminUserName,
 		})
 	}
+	if uuo.mutation.AdminUserNameCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: user.FieldAdminUserName,
+		})
+	}
 	if value, ok := uuo.mutation.AdminUserToken(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
+			Column: user.FieldAdminUserToken,
+		})
+	}
+	if uuo.mutation.AdminUserTokenCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
 			Column: user.FieldAdminUserToken,
 		})
 	}

@@ -6,7 +6,7 @@ import (
 	"bongo/ent/predicate"
 	"bongo/ent/sellerproduct"
 	"bongo/ent/sellershop"
-	"bongo/ent/sellershopproduct"
+	"bongo/ent/shopcategory"
 	"bongo/ent/user"
 	"context"
 	"fmt"
@@ -54,18 +54,6 @@ func (ssu *SellerShopUpdate) SetBanner(s string) *SellerShopUpdate {
 	return ssu
 }
 
-// SetShopCategoryID sets the "shop_category_id" field.
-func (ssu *SellerShopUpdate) SetShopCategoryID(s string) *SellerShopUpdate {
-	ssu.mutation.SetShopCategoryID(s)
-	return ssu
-}
-
-// SetShopCategory sets the "shop_category" field.
-func (ssu *SellerShopUpdate) SetShopCategory(s string) *SellerShopUpdate {
-	ssu.mutation.SetShopCategory(s)
-	return ssu
-}
-
 // SetBusinessLocation sets the "business_location" field.
 func (ssu *SellerShopUpdate) SetBusinessLocation(s string) *SellerShopUpdate {
 	ssu.mutation.SetBusinessLocation(s)
@@ -81,6 +69,14 @@ func (ssu *SellerShopUpdate) SetTaxID(s string) *SellerShopUpdate {
 // SetActive sets the "active" field.
 func (ssu *SellerShopUpdate) SetActive(b bool) *SellerShopUpdate {
 	ssu.mutation.SetActive(b)
+	return ssu
+}
+
+// SetNillableActive sets the "active" field if the given value is not nil.
+func (ssu *SellerShopUpdate) SetNillableActive(b *bool) *SellerShopUpdate {
+	if b != nil {
+		ssu.SetActive(*b)
+	}
 	return ssu
 }
 
@@ -148,6 +144,25 @@ func (ssu *SellerShopUpdate) SetAdmin(u *User) *SellerShopUpdate {
 	return ssu.SetAdminID(u.ID)
 }
 
+// SetGetShopCategoryID sets the "get_shop_category" edge to the ShopCategory entity by ID.
+func (ssu *SellerShopUpdate) SetGetShopCategoryID(id int) *SellerShopUpdate {
+	ssu.mutation.SetGetShopCategoryID(id)
+	return ssu
+}
+
+// SetNillableGetShopCategoryID sets the "get_shop_category" edge to the ShopCategory entity by ID if the given value is not nil.
+func (ssu *SellerShopUpdate) SetNillableGetShopCategoryID(id *int) *SellerShopUpdate {
+	if id != nil {
+		ssu = ssu.SetGetShopCategoryID(*id)
+	}
+	return ssu
+}
+
+// SetGetShopCategory sets the "get_shop_category" edge to the ShopCategory entity.
+func (ssu *SellerShopUpdate) SetGetShopCategory(s *ShopCategory) *SellerShopUpdate {
+	return ssu.SetGetShopCategoryID(s.ID)
+}
+
 // AddSellerProductIDs adds the "seller_products" edge to the SellerProduct entity by IDs.
 func (ssu *SellerShopUpdate) AddSellerProductIDs(ids ...int) *SellerShopUpdate {
 	ssu.mutation.AddSellerProductIDs(ids...)
@@ -161,21 +176,6 @@ func (ssu *SellerShopUpdate) AddSellerProducts(s ...*SellerProduct) *SellerShopU
 		ids[i] = s[i].ID
 	}
 	return ssu.AddSellerProductIDs(ids...)
-}
-
-// AddSellerShopProductIDs adds the "seller_shop_products" edge to the SellerShopProduct entity by IDs.
-func (ssu *SellerShopUpdate) AddSellerShopProductIDs(ids ...int) *SellerShopUpdate {
-	ssu.mutation.AddSellerShopProductIDs(ids...)
-	return ssu
-}
-
-// AddSellerShopProducts adds the "seller_shop_products" edges to the SellerShopProduct entity.
-func (ssu *SellerShopUpdate) AddSellerShopProducts(s ...*SellerShopProduct) *SellerShopUpdate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return ssu.AddSellerShopProductIDs(ids...)
 }
 
 // Mutation returns the SellerShopMutation object of the builder.
@@ -192,6 +192,12 @@ func (ssu *SellerShopUpdate) ClearUser() *SellerShopUpdate {
 // ClearAdmin clears the "admin" edge to the User entity.
 func (ssu *SellerShopUpdate) ClearAdmin() *SellerShopUpdate {
 	ssu.mutation.ClearAdmin()
+	return ssu
+}
+
+// ClearGetShopCategory clears the "get_shop_category" edge to the ShopCategory entity.
+func (ssu *SellerShopUpdate) ClearGetShopCategory() *SellerShopUpdate {
+	ssu.mutation.ClearGetShopCategory()
 	return ssu
 }
 
@@ -214,27 +220,6 @@ func (ssu *SellerShopUpdate) RemoveSellerProducts(s ...*SellerProduct) *SellerSh
 		ids[i] = s[i].ID
 	}
 	return ssu.RemoveSellerProductIDs(ids...)
-}
-
-// ClearSellerShopProducts clears all "seller_shop_products" edges to the SellerShopProduct entity.
-func (ssu *SellerShopUpdate) ClearSellerShopProducts() *SellerShopUpdate {
-	ssu.mutation.ClearSellerShopProducts()
-	return ssu
-}
-
-// RemoveSellerShopProductIDs removes the "seller_shop_products" edge to SellerShopProduct entities by IDs.
-func (ssu *SellerShopUpdate) RemoveSellerShopProductIDs(ids ...int) *SellerShopUpdate {
-	ssu.mutation.RemoveSellerShopProductIDs(ids...)
-	return ssu
-}
-
-// RemoveSellerShopProducts removes "seller_shop_products" edges to SellerShopProduct entities.
-func (ssu *SellerShopUpdate) RemoveSellerShopProducts(s ...*SellerShopProduct) *SellerShopUpdate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return ssu.RemoveSellerShopProductIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -362,20 +347,6 @@ func (ssu *SellerShopUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: sellershop.FieldBanner,
 		})
 	}
-	if value, ok := ssu.mutation.ShopCategoryID(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: sellershop.FieldShopCategoryID,
-		})
-	}
-	if value, ok := ssu.mutation.ShopCategory(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: sellershop.FieldShopCategory,
-		})
-	}
 	if value, ok := ssu.mutation.BusinessLocation(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -487,6 +458,41 @@ func (ssu *SellerShopUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if ssu.mutation.GetShopCategoryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   sellershop.GetShopCategoryTable,
+			Columns: []string{sellershop.GetShopCategoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: shopcategory.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ssu.mutation.GetShopCategoryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   sellershop.GetShopCategoryTable,
+			Columns: []string{sellershop.GetShopCategoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: shopcategory.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if ssu.mutation.SellerProductsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -541,60 +547,6 @@ func (ssu *SellerShopUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ssu.mutation.SellerShopProductsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellershop.SellerShopProductsTable,
-			Columns: []string{sellershop.SellerShopProductsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellershopproduct.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ssu.mutation.RemovedSellerShopProductsIDs(); len(nodes) > 0 && !ssu.mutation.SellerShopProductsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellershop.SellerShopProductsTable,
-			Columns: []string{sellershop.SellerShopProductsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellershopproduct.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ssu.mutation.SellerShopProductsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellershop.SellerShopProductsTable,
-			Columns: []string{sellershop.SellerShopProductsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellershopproduct.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ssu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{sellershop.Label}
@@ -638,18 +590,6 @@ func (ssuo *SellerShopUpdateOne) SetBanner(s string) *SellerShopUpdateOne {
 	return ssuo
 }
 
-// SetShopCategoryID sets the "shop_category_id" field.
-func (ssuo *SellerShopUpdateOne) SetShopCategoryID(s string) *SellerShopUpdateOne {
-	ssuo.mutation.SetShopCategoryID(s)
-	return ssuo
-}
-
-// SetShopCategory sets the "shop_category" field.
-func (ssuo *SellerShopUpdateOne) SetShopCategory(s string) *SellerShopUpdateOne {
-	ssuo.mutation.SetShopCategory(s)
-	return ssuo
-}
-
 // SetBusinessLocation sets the "business_location" field.
 func (ssuo *SellerShopUpdateOne) SetBusinessLocation(s string) *SellerShopUpdateOne {
 	ssuo.mutation.SetBusinessLocation(s)
@@ -665,6 +605,14 @@ func (ssuo *SellerShopUpdateOne) SetTaxID(s string) *SellerShopUpdateOne {
 // SetActive sets the "active" field.
 func (ssuo *SellerShopUpdateOne) SetActive(b bool) *SellerShopUpdateOne {
 	ssuo.mutation.SetActive(b)
+	return ssuo
+}
+
+// SetNillableActive sets the "active" field if the given value is not nil.
+func (ssuo *SellerShopUpdateOne) SetNillableActive(b *bool) *SellerShopUpdateOne {
+	if b != nil {
+		ssuo.SetActive(*b)
+	}
 	return ssuo
 }
 
@@ -732,6 +680,25 @@ func (ssuo *SellerShopUpdateOne) SetAdmin(u *User) *SellerShopUpdateOne {
 	return ssuo.SetAdminID(u.ID)
 }
 
+// SetGetShopCategoryID sets the "get_shop_category" edge to the ShopCategory entity by ID.
+func (ssuo *SellerShopUpdateOne) SetGetShopCategoryID(id int) *SellerShopUpdateOne {
+	ssuo.mutation.SetGetShopCategoryID(id)
+	return ssuo
+}
+
+// SetNillableGetShopCategoryID sets the "get_shop_category" edge to the ShopCategory entity by ID if the given value is not nil.
+func (ssuo *SellerShopUpdateOne) SetNillableGetShopCategoryID(id *int) *SellerShopUpdateOne {
+	if id != nil {
+		ssuo = ssuo.SetGetShopCategoryID(*id)
+	}
+	return ssuo
+}
+
+// SetGetShopCategory sets the "get_shop_category" edge to the ShopCategory entity.
+func (ssuo *SellerShopUpdateOne) SetGetShopCategory(s *ShopCategory) *SellerShopUpdateOne {
+	return ssuo.SetGetShopCategoryID(s.ID)
+}
+
 // AddSellerProductIDs adds the "seller_products" edge to the SellerProduct entity by IDs.
 func (ssuo *SellerShopUpdateOne) AddSellerProductIDs(ids ...int) *SellerShopUpdateOne {
 	ssuo.mutation.AddSellerProductIDs(ids...)
@@ -745,21 +712,6 @@ func (ssuo *SellerShopUpdateOne) AddSellerProducts(s ...*SellerProduct) *SellerS
 		ids[i] = s[i].ID
 	}
 	return ssuo.AddSellerProductIDs(ids...)
-}
-
-// AddSellerShopProductIDs adds the "seller_shop_products" edge to the SellerShopProduct entity by IDs.
-func (ssuo *SellerShopUpdateOne) AddSellerShopProductIDs(ids ...int) *SellerShopUpdateOne {
-	ssuo.mutation.AddSellerShopProductIDs(ids...)
-	return ssuo
-}
-
-// AddSellerShopProducts adds the "seller_shop_products" edges to the SellerShopProduct entity.
-func (ssuo *SellerShopUpdateOne) AddSellerShopProducts(s ...*SellerShopProduct) *SellerShopUpdateOne {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return ssuo.AddSellerShopProductIDs(ids...)
 }
 
 // Mutation returns the SellerShopMutation object of the builder.
@@ -776,6 +728,12 @@ func (ssuo *SellerShopUpdateOne) ClearUser() *SellerShopUpdateOne {
 // ClearAdmin clears the "admin" edge to the User entity.
 func (ssuo *SellerShopUpdateOne) ClearAdmin() *SellerShopUpdateOne {
 	ssuo.mutation.ClearAdmin()
+	return ssuo
+}
+
+// ClearGetShopCategory clears the "get_shop_category" edge to the ShopCategory entity.
+func (ssuo *SellerShopUpdateOne) ClearGetShopCategory() *SellerShopUpdateOne {
+	ssuo.mutation.ClearGetShopCategory()
 	return ssuo
 }
 
@@ -798,27 +756,6 @@ func (ssuo *SellerShopUpdateOne) RemoveSellerProducts(s ...*SellerProduct) *Sell
 		ids[i] = s[i].ID
 	}
 	return ssuo.RemoveSellerProductIDs(ids...)
-}
-
-// ClearSellerShopProducts clears all "seller_shop_products" edges to the SellerShopProduct entity.
-func (ssuo *SellerShopUpdateOne) ClearSellerShopProducts() *SellerShopUpdateOne {
-	ssuo.mutation.ClearSellerShopProducts()
-	return ssuo
-}
-
-// RemoveSellerShopProductIDs removes the "seller_shop_products" edge to SellerShopProduct entities by IDs.
-func (ssuo *SellerShopUpdateOne) RemoveSellerShopProductIDs(ids ...int) *SellerShopUpdateOne {
-	ssuo.mutation.RemoveSellerShopProductIDs(ids...)
-	return ssuo
-}
-
-// RemoveSellerShopProducts removes "seller_shop_products" edges to SellerShopProduct entities.
-func (ssuo *SellerShopUpdateOne) RemoveSellerShopProducts(s ...*SellerShopProduct) *SellerShopUpdateOne {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return ssuo.RemoveSellerShopProductIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -970,20 +907,6 @@ func (ssuo *SellerShopUpdateOne) sqlSave(ctx context.Context) (_node *SellerShop
 			Column: sellershop.FieldBanner,
 		})
 	}
-	if value, ok := ssuo.mutation.ShopCategoryID(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: sellershop.FieldShopCategoryID,
-		})
-	}
-	if value, ok := ssuo.mutation.ShopCategory(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: sellershop.FieldShopCategory,
-		})
-	}
 	if value, ok := ssuo.mutation.BusinessLocation(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -1095,6 +1018,41 @@ func (ssuo *SellerShopUpdateOne) sqlSave(ctx context.Context) (_node *SellerShop
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if ssuo.mutation.GetShopCategoryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   sellershop.GetShopCategoryTable,
+			Columns: []string{sellershop.GetShopCategoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: shopcategory.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ssuo.mutation.GetShopCategoryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   sellershop.GetShopCategoryTable,
+			Columns: []string{sellershop.GetShopCategoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: shopcategory.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if ssuo.mutation.SellerProductsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1141,60 +1099,6 @@ func (ssuo *SellerShopUpdateOne) sqlSave(ctx context.Context) (_node *SellerShop
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: sellerproduct.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if ssuo.mutation.SellerShopProductsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellershop.SellerShopProductsTable,
-			Columns: []string{sellershop.SellerShopProductsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellershopproduct.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ssuo.mutation.RemovedSellerShopProductsIDs(); len(nodes) > 0 && !ssuo.mutation.SellerShopProductsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellershop.SellerShopProductsTable,
-			Columns: []string{sellershop.SellerShopProductsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellershopproduct.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ssuo.mutation.SellerShopProductsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellershop.SellerShopProductsTable,
-			Columns: []string{sellershop.SellerShopProductsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellershopproduct.FieldID,
 				},
 			},
 		}

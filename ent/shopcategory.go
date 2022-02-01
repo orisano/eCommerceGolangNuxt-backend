@@ -39,9 +39,11 @@ type ShopCategoryEdges struct {
 	Categories []*Category `json:"categories,omitempty"`
 	// SellerRequests holds the value of the seller_requests edge.
 	SellerRequests []*SellerRequest `json:"seller_requests,omitempty"`
+	// SellerShops holds the value of the seller_shops edge.
+	SellerShops []*SellerShop `json:"seller_shops,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // CategoriesOrErr returns the Categories value or an error if the edge
@@ -60,6 +62,15 @@ func (e ShopCategoryEdges) SellerRequestsOrErr() ([]*SellerRequest, error) {
 		return e.SellerRequests, nil
 	}
 	return nil, &NotLoadedError{edge: "seller_requests"}
+}
+
+// SellerShopsOrErr returns the SellerShops value or an error if the edge
+// was not loaded in eager-loading.
+func (e ShopCategoryEdges) SellerShopsOrErr() ([]*SellerShop, error) {
+	if e.loadedTypes[2] {
+		return e.SellerShops, nil
+	}
+	return nil, &NotLoadedError{edge: "seller_shops"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -144,6 +155,11 @@ func (sc *ShopCategory) QueryCategories() *CategoryQuery {
 // QuerySellerRequests queries the "seller_requests" edge of the ShopCategory entity.
 func (sc *ShopCategory) QuerySellerRequests() *SellerRequestQuery {
 	return (&ShopCategoryClient{config: sc.config}).QuerySellerRequests(sc)
+}
+
+// QuerySellerShops queries the "seller_shops" edge of the ShopCategory entity.
+func (sc *ShopCategory) QuerySellerShops() *SellerShopQuery {
+	return (&ShopCategoryClient{config: sc.config}).QuerySellerShops(sc)
 }
 
 // Update returns a builder for updating this ShopCategory.

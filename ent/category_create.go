@@ -4,6 +4,7 @@ package ent
 
 import (
 	"bongo/ent/category"
+	"bongo/ent/sellerproduct"
 	"bongo/ent/sellerproductcategory"
 	"bongo/ent/shopcategory"
 	"context"
@@ -142,6 +143,21 @@ func (cc *CategoryCreate) AddProductCategories(s ...*SellerProductCategory) *Cat
 		ids[i] = s[i].ID
 	}
 	return cc.AddProductCategoryIDs(ids...)
+}
+
+// AddSellerProductIDs adds the "seller_products" edge to the SellerProduct entity by IDs.
+func (cc *CategoryCreate) AddSellerProductIDs(ids ...int) *CategoryCreate {
+	cc.mutation.AddSellerProductIDs(ids...)
+	return cc
+}
+
+// AddSellerProducts adds the "seller_products" edges to the SellerProduct entity.
+func (cc *CategoryCreate) AddSellerProducts(s ...*SellerProduct) *CategoryCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return cc.AddSellerProductIDs(ids...)
 }
 
 // Mutation returns the CategoryMutation object of the builder.
@@ -376,6 +392,25 @@ func (cc *CategoryCreate) createSpec() (*Category, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: sellerproductcategory.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.SellerProductsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   category.SellerProductsTable,
+			Columns: category.SellerProductsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: sellerproduct.FieldID,
 				},
 			},
 		}

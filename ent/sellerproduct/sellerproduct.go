@@ -45,16 +45,16 @@ const (
 	EdgeUser = "user"
 	// EdgeSellerProductImages holds the string denoting the seller_product_images edge name in mutations.
 	EdgeSellerProductImages = "seller_product_images"
-	// EdgeSellerProductCategories holds the string denoting the seller_product_categories edge name in mutations.
-	EdgeSellerProductCategories = "seller_product_categories"
+	// EdgeCategories holds the string denoting the categories edge name in mutations.
+	EdgeCategories = "categories"
+	// EdgeShop holds the string denoting the shop edge name in mutations.
+	EdgeShop = "shop"
 	// EdgeCartProducts holds the string denoting the cart_products edge name in mutations.
 	EdgeCartProducts = "cart_products"
 	// EdgeCheckoutProducts holds the string denoting the checkout_products edge name in mutations.
 	EdgeCheckoutProducts = "checkout_products"
 	// EdgeSellerProductVariations holds the string denoting the seller_product_variations edge name in mutations.
 	EdgeSellerProductVariations = "seller_product_variations"
-	// EdgeSellerShopProducts holds the string denoting the seller_shop_products edge name in mutations.
-	EdgeSellerShopProducts = "seller_shop_products"
 	// Table holds the table name of the sellerproduct in the database.
 	Table = "seller_products"
 	// BrandTable is the table that holds the brand relation/edge.
@@ -78,13 +78,18 @@ const (
 	SellerProductImagesInverseTable = "seller_product_images"
 	// SellerProductImagesColumn is the table column denoting the seller_product_images relation/edge.
 	SellerProductImagesColumn = "seller_product_seller_product_images"
-	// SellerProductCategoriesTable is the table that holds the seller_product_categories relation/edge.
-	SellerProductCategoriesTable = "seller_product_categories"
-	// SellerProductCategoriesInverseTable is the table name for the SellerProductCategory entity.
-	// It exists in this package in order to avoid circular dependency with the "sellerproductcategory" package.
-	SellerProductCategoriesInverseTable = "seller_product_categories"
-	// SellerProductCategoriesColumn is the table column denoting the seller_product_categories relation/edge.
-	SellerProductCategoriesColumn = "seller_product_seller_product_categories"
+	// CategoriesTable is the table that holds the categories relation/edge. The primary key declared below.
+	CategoriesTable = "category_seller_products"
+	// CategoriesInverseTable is the table name for the Category entity.
+	// It exists in this package in order to avoid circular dependency with the "category" package.
+	CategoriesInverseTable = "categories"
+	// ShopTable is the table that holds the shop relation/edge.
+	ShopTable = "seller_products"
+	// ShopInverseTable is the table name for the SellerShop entity.
+	// It exists in this package in order to avoid circular dependency with the "sellershop" package.
+	ShopInverseTable = "seller_shops"
+	// ShopColumn is the table column denoting the shop relation/edge.
+	ShopColumn = "seller_shop_seller_products"
 	// CartProductsTable is the table that holds the cart_products relation/edge.
 	CartProductsTable = "cart_products"
 	// CartProductsInverseTable is the table name for the CartProduct entity.
@@ -106,13 +111,6 @@ const (
 	SellerProductVariationsInverseTable = "seller_product_variations"
 	// SellerProductVariationsColumn is the table column denoting the seller_product_variations relation/edge.
 	SellerProductVariationsColumn = "seller_product_seller_product_variations"
-	// SellerShopProductsTable is the table that holds the seller_shop_products relation/edge.
-	SellerShopProductsTable = "seller_shop_products"
-	// SellerShopProductsInverseTable is the table name for the SellerShopProduct entity.
-	// It exists in this package in order to avoid circular dependency with the "sellershopproduct" package.
-	SellerShopProductsInverseTable = "seller_shop_products"
-	// SellerShopProductsColumn is the table column denoting the seller_shop_products relation/edge.
-	SellerShopProductsColumn = "seller_product_seller_shop_products"
 )
 
 // Columns holds all SQL columns for sellerproduct fields.
@@ -142,6 +140,12 @@ var ForeignKeys = []string{
 	"user_seller_products",
 }
 
+var (
+	// CategoriesPrimaryKey and CategoriesColumn2 are the table columns denoting the
+	// primary key for the categories relation (M2M).
+	CategoriesPrimaryKey = []string{"category_id", "seller_product_id"}
+)
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
@@ -160,6 +164,8 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultActive holds the default value on creation for the "active" field.
 	DefaultActive bool
+	// DefaultOfferPrice holds the default value on creation for the "offer_price" field.
+	DefaultOfferPrice int
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.

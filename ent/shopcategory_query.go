@@ -6,6 +6,7 @@ import (
 	"bongo/ent/category"
 	"bongo/ent/predicate"
 	"bongo/ent/sellerrequest"
+	"bongo/ent/sellershop"
 	"bongo/ent/shopcategory"
 	"context"
 	"database/sql/driver"
@@ -30,6 +31,7 @@ type ShopCategoryQuery struct {
 	// eager-loading edges.
 	withCategories     *CategoryQuery
 	withSellerRequests *SellerRequestQuery
+	withSellerShops    *SellerShopQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -103,6 +105,28 @@ func (scq *ShopCategoryQuery) QuerySellerRequests() *SellerRequestQuery {
 			sqlgraph.From(shopcategory.Table, shopcategory.FieldID, selector),
 			sqlgraph.To(sellerrequest.Table, sellerrequest.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, shopcategory.SellerRequestsTable, shopcategory.SellerRequestsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(scq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySellerShops chains the current query on the "seller_shops" edge.
+func (scq *ShopCategoryQuery) QuerySellerShops() *SellerShopQuery {
+	query := &SellerShopQuery{config: scq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := scq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := scq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(shopcategory.Table, shopcategory.FieldID, selector),
+			sqlgraph.To(sellershop.Table, sellershop.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, shopcategory.SellerShopsTable, shopcategory.SellerShopsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(scq.driver.Dialect(), step)
 		return fromU, nil
@@ -293,6 +317,7 @@ func (scq *ShopCategoryQuery) Clone() *ShopCategoryQuery {
 		predicates:         append([]predicate.ShopCategory{}, scq.predicates...),
 		withCategories:     scq.withCategories.Clone(),
 		withSellerRequests: scq.withSellerRequests.Clone(),
+		withSellerShops:    scq.withSellerShops.Clone(),
 		// clone intermediate query.
 		sql:  scq.sql.Clone(),
 		path: scq.path,
@@ -318,6 +343,17 @@ func (scq *ShopCategoryQuery) WithSellerRequests(opts ...func(*SellerRequestQuer
 		opt(query)
 	}
 	scq.withSellerRequests = query
+	return scq
+}
+
+// WithSellerShops tells the query-builder to eager-load the nodes that are connected to
+// the "seller_shops" edge. The optional arguments are used to configure the query builder of the edge.
+func (scq *ShopCategoryQuery) WithSellerShops(opts ...func(*SellerShopQuery)) *ShopCategoryQuery {
+	query := &SellerShopQuery{config: scq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	scq.withSellerShops = query
 	return scq
 }
 
@@ -386,9 +422,10 @@ func (scq *ShopCategoryQuery) sqlAll(ctx context.Context) ([]*ShopCategory, erro
 	var (
 		nodes       = []*ShopCategory{}
 		_spec       = scq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			scq.withCategories != nil,
 			scq.withSellerRequests != nil,
+			scq.withSellerShops != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -466,6 +503,35 @@ func (scq *ShopCategoryQuery) sqlAll(ctx context.Context) ([]*ShopCategory, erro
 				return nil, fmt.Errorf(`unexpected foreign-key "shop_category_seller_requests" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.SellerRequests = append(node.Edges.SellerRequests, n)
+		}
+	}
+
+	if query := scq.withSellerShops; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*ShopCategory)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.SellerShops = []*SellerShop{}
+		}
+		query.withFKs = true
+		query.Where(predicate.SellerShop(func(s *sql.Selector) {
+			s.Where(sql.InValues(shopcategory.SellerShopsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.shop_category_seller_shops
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "shop_category_seller_shops" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "shop_category_seller_shops" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.SellerShops = append(node.Edges.SellerShops, n)
 		}
 	}
 

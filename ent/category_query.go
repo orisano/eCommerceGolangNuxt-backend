@@ -5,6 +5,7 @@ package ent
 import (
 	"bongo/ent/category"
 	"bongo/ent/predicate"
+	"bongo/ent/sellerproduct"
 	"bongo/ent/sellerproductcategory"
 	"bongo/ent/shopcategory"
 	"context"
@@ -32,6 +33,7 @@ type CategoryQuery struct {
 	withParent            *CategoryQuery
 	withChildren          *CategoryQuery
 	withProductCategories *SellerProductCategoryQuery
+	withSellerProducts    *SellerProductQuery
 	withFKs               bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -150,6 +152,28 @@ func (cq *CategoryQuery) QueryProductCategories() *SellerProductCategoryQuery {
 			sqlgraph.From(category.Table, category.FieldID, selector),
 			sqlgraph.To(sellerproductcategory.Table, sellerproductcategory.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, category.ProductCategoriesTable, category.ProductCategoriesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySellerProducts chains the current query on the "seller_products" edge.
+func (cq *CategoryQuery) QuerySellerProducts() *SellerProductQuery {
+	query := &SellerProductQuery{config: cq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(category.Table, category.FieldID, selector),
+			sqlgraph.To(sellerproduct.Table, sellerproduct.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, category.SellerProductsTable, category.SellerProductsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -342,6 +366,7 @@ func (cq *CategoryQuery) Clone() *CategoryQuery {
 		withParent:            cq.withParent.Clone(),
 		withChildren:          cq.withChildren.Clone(),
 		withProductCategories: cq.withProductCategories.Clone(),
+		withSellerProducts:    cq.withSellerProducts.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
 		path: cq.path,
@@ -389,6 +414,17 @@ func (cq *CategoryQuery) WithProductCategories(opts ...func(*SellerProductCatego
 		opt(query)
 	}
 	cq.withProductCategories = query
+	return cq
+}
+
+// WithSellerProducts tells the query-builder to eager-load the nodes that are connected to
+// the "seller_products" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CategoryQuery) WithSellerProducts(opts ...func(*SellerProductQuery)) *CategoryQuery {
+	query := &SellerProductQuery{config: cq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withSellerProducts = query
 	return cq
 }
 
@@ -458,11 +494,12 @@ func (cq *CategoryQuery) sqlAll(ctx context.Context) ([]*Category, error) {
 		nodes       = []*Category{}
 		withFKs     = cq.withFKs
 		_spec       = cq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			cq.withShopCategory != nil,
 			cq.withParent != nil,
 			cq.withChildren != nil,
 			cq.withProductCategories != nil,
+			cq.withSellerProducts != nil,
 		}
 	)
 	if cq.withShopCategory != nil || cq.withParent != nil {
@@ -604,6 +641,71 @@ func (cq *CategoryQuery) sqlAll(ctx context.Context) ([]*Category, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "category_product_categories" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.ProductCategories = append(node.Edges.ProductCategories, n)
+		}
+	}
+
+	if query := cq.withSellerProducts; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		ids := make(map[int]*Category, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.SellerProducts = []*SellerProduct{}
+		}
+		var (
+			edgeids []int
+			edges   = make(map[int][]*Category)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: false,
+				Table:   category.SellerProductsTable,
+				Columns: category.SellerProductsPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(category.SellerProductsPrimaryKey[0], fks...))
+			},
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{new(sql.NullInt64), new(sql.NullInt64)}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				if _, ok := edges[inValue]; !ok {
+					edgeids = append(edgeids, inValue)
+				}
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, cq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "seller_products": %w`, err)
+		}
+		query.Where(sellerproduct.IDIn(edgeids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := edges[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected "seller_products" node returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.SellerProducts = append(nodes[i].Edges.SellerProducts, n)
+			}
 		}
 	}
 

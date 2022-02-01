@@ -5,7 +5,7 @@ package ent
 import (
 	"bongo/ent/sellerproduct"
 	"bongo/ent/sellershop"
-	"bongo/ent/sellershopproduct"
+	"bongo/ent/shopcategory"
 	"bongo/ent/user"
 	"context"
 	"errors"
@@ -47,18 +47,6 @@ func (ssc *SellerShopCreate) SetBanner(s string) *SellerShopCreate {
 	return ssc
 }
 
-// SetShopCategoryID sets the "shop_category_id" field.
-func (ssc *SellerShopCreate) SetShopCategoryID(s string) *SellerShopCreate {
-	ssc.mutation.SetShopCategoryID(s)
-	return ssc
-}
-
-// SetShopCategory sets the "shop_category" field.
-func (ssc *SellerShopCreate) SetShopCategory(s string) *SellerShopCreate {
-	ssc.mutation.SetShopCategory(s)
-	return ssc
-}
-
 // SetBusinessLocation sets the "business_location" field.
 func (ssc *SellerShopCreate) SetBusinessLocation(s string) *SellerShopCreate {
 	ssc.mutation.SetBusinessLocation(s)
@@ -74,6 +62,14 @@ func (ssc *SellerShopCreate) SetTaxID(s string) *SellerShopCreate {
 // SetActive sets the "active" field.
 func (ssc *SellerShopCreate) SetActive(b bool) *SellerShopCreate {
 	ssc.mutation.SetActive(b)
+	return ssc
+}
+
+// SetNillableActive sets the "active" field if the given value is not nil.
+func (ssc *SellerShopCreate) SetNillableActive(b *bool) *SellerShopCreate {
+	if b != nil {
+		ssc.SetActive(*b)
+	}
 	return ssc
 }
 
@@ -157,6 +153,25 @@ func (ssc *SellerShopCreate) SetAdmin(u *User) *SellerShopCreate {
 	return ssc.SetAdminID(u.ID)
 }
 
+// SetGetShopCategoryID sets the "get_shop_category" edge to the ShopCategory entity by ID.
+func (ssc *SellerShopCreate) SetGetShopCategoryID(id int) *SellerShopCreate {
+	ssc.mutation.SetGetShopCategoryID(id)
+	return ssc
+}
+
+// SetNillableGetShopCategoryID sets the "get_shop_category" edge to the ShopCategory entity by ID if the given value is not nil.
+func (ssc *SellerShopCreate) SetNillableGetShopCategoryID(id *int) *SellerShopCreate {
+	if id != nil {
+		ssc = ssc.SetGetShopCategoryID(*id)
+	}
+	return ssc
+}
+
+// SetGetShopCategory sets the "get_shop_category" edge to the ShopCategory entity.
+func (ssc *SellerShopCreate) SetGetShopCategory(s *ShopCategory) *SellerShopCreate {
+	return ssc.SetGetShopCategoryID(s.ID)
+}
+
 // AddSellerProductIDs adds the "seller_products" edge to the SellerProduct entity by IDs.
 func (ssc *SellerShopCreate) AddSellerProductIDs(ids ...int) *SellerShopCreate {
 	ssc.mutation.AddSellerProductIDs(ids...)
@@ -170,21 +185,6 @@ func (ssc *SellerShopCreate) AddSellerProducts(s ...*SellerProduct) *SellerShopC
 		ids[i] = s[i].ID
 	}
 	return ssc.AddSellerProductIDs(ids...)
-}
-
-// AddSellerShopProductIDs adds the "seller_shop_products" edge to the SellerShopProduct entity by IDs.
-func (ssc *SellerShopCreate) AddSellerShopProductIDs(ids ...int) *SellerShopCreate {
-	ssc.mutation.AddSellerShopProductIDs(ids...)
-	return ssc
-}
-
-// AddSellerShopProducts adds the "seller_shop_products" edges to the SellerShopProduct entity.
-func (ssc *SellerShopCreate) AddSellerShopProducts(s ...*SellerShopProduct) *SellerShopCreate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return ssc.AddSellerShopProductIDs(ids...)
 }
 
 // Mutation returns the SellerShopMutation object of the builder.
@@ -258,6 +258,10 @@ func (ssc *SellerShopCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (ssc *SellerShopCreate) defaults() {
+	if _, ok := ssc.mutation.Active(); !ok {
+		v := sellershop.DefaultActive
+		ssc.mutation.SetActive(v)
+	}
 	if _, ok := ssc.mutation.CreatedAt(); !ok {
 		v := sellershop.DefaultCreatedAt()
 		ssc.mutation.SetCreatedAt(v)
@@ -286,12 +290,6 @@ func (ssc *SellerShopCreate) check() error {
 	}
 	if _, ok := ssc.mutation.Banner(); !ok {
 		return &ValidationError{Name: "banner", err: errors.New(`ent: missing required field "banner"`)}
-	}
-	if _, ok := ssc.mutation.ShopCategoryID(); !ok {
-		return &ValidationError{Name: "shop_category_id", err: errors.New(`ent: missing required field "shop_category_id"`)}
-	}
-	if _, ok := ssc.mutation.ShopCategory(); !ok {
-		return &ValidationError{Name: "shop_category", err: errors.New(`ent: missing required field "shop_category"`)}
 	}
 	if _, ok := ssc.mutation.BusinessLocation(); !ok {
 		return &ValidationError{Name: "business_location", err: errors.New(`ent: missing required field "business_location"`)}
@@ -366,22 +364,6 @@ func (ssc *SellerShopCreate) createSpec() (*SellerShop, *sqlgraph.CreateSpec) {
 			Column: sellershop.FieldBanner,
 		})
 		_node.Banner = value
-	}
-	if value, ok := ssc.mutation.ShopCategoryID(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: sellershop.FieldShopCategoryID,
-		})
-		_node.ShopCategoryID = value
-	}
-	if value, ok := ssc.mutation.ShopCategory(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: sellershop.FieldShopCategory,
-		})
-		_node.ShopCategory = value
 	}
 	if value, ok := ssc.mutation.BusinessLocation(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -471,6 +453,26 @@ func (ssc *SellerShopCreate) createSpec() (*SellerShop, *sqlgraph.CreateSpec) {
 		_node.user_approved_shops = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := ssc.mutation.GetShopCategoryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   sellershop.GetShopCategoryTable,
+			Columns: []string{sellershop.GetShopCategoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: shopcategory.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.shop_category_seller_shops = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := ssc.mutation.SellerProductsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -482,25 +484,6 @@ func (ssc *SellerShopCreate) createSpec() (*SellerShop, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: sellerproduct.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ssc.mutation.SellerShopProductsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellershop.SellerShopProductsTable,
-			Columns: []string{sellershop.SellerShopProductsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellershopproduct.FieldID,
 				},
 			},
 		}

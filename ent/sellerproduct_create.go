@@ -5,12 +5,12 @@ package ent
 import (
 	"bongo/ent/brand"
 	"bongo/ent/cartproduct"
+	"bongo/ent/category"
 	"bongo/ent/checkoutproduct"
 	"bongo/ent/sellerproduct"
-	"bongo/ent/sellerproductcategory"
 	"bongo/ent/sellerproductimage"
 	"bongo/ent/sellerproductvariation"
-	"bongo/ent/sellershopproduct"
+	"bongo/ent/sellershop"
 	"bongo/ent/user"
 	"context"
 	"errors"
@@ -130,15 +130,15 @@ func (spc *SellerProductCreate) SetNillableOfferPriceEnd(t *time.Time) *SellerPr
 }
 
 // SetNextStock sets the "next_stock" field.
-func (spc *SellerProductCreate) SetNextStock(s string) *SellerProductCreate {
-	spc.mutation.SetNextStock(s)
+func (spc *SellerProductCreate) SetNextStock(t time.Time) *SellerProductCreate {
+	spc.mutation.SetNextStock(t)
 	return spc
 }
 
 // SetNillableNextStock sets the "next_stock" field if the given value is not nil.
-func (spc *SellerProductCreate) SetNillableNextStock(s *string) *SellerProductCreate {
-	if s != nil {
-		spc.SetNextStock(*s)
+func (spc *SellerProductCreate) SetNillableNextStock(t *time.Time) *SellerProductCreate {
+	if t != nil {
+		spc.SetNextStock(*t)
 	}
 	return spc
 }
@@ -238,19 +238,38 @@ func (spc *SellerProductCreate) AddSellerProductImages(s ...*SellerProductImage)
 	return spc.AddSellerProductImageIDs(ids...)
 }
 
-// AddSellerProductCategoryIDs adds the "seller_product_categories" edge to the SellerProductCategory entity by IDs.
-func (spc *SellerProductCreate) AddSellerProductCategoryIDs(ids ...int) *SellerProductCreate {
-	spc.mutation.AddSellerProductCategoryIDs(ids...)
+// AddCategoryIDs adds the "categories" edge to the Category entity by IDs.
+func (spc *SellerProductCreate) AddCategoryIDs(ids ...int) *SellerProductCreate {
+	spc.mutation.AddCategoryIDs(ids...)
 	return spc
 }
 
-// AddSellerProductCategories adds the "seller_product_categories" edges to the SellerProductCategory entity.
-func (spc *SellerProductCreate) AddSellerProductCategories(s ...*SellerProductCategory) *SellerProductCreate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// AddCategories adds the "categories" edges to the Category entity.
+func (spc *SellerProductCreate) AddCategories(c ...*Category) *SellerProductCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
 	}
-	return spc.AddSellerProductCategoryIDs(ids...)
+	return spc.AddCategoryIDs(ids...)
+}
+
+// SetShopID sets the "shop" edge to the SellerShop entity by ID.
+func (spc *SellerProductCreate) SetShopID(id int) *SellerProductCreate {
+	spc.mutation.SetShopID(id)
+	return spc
+}
+
+// SetNillableShopID sets the "shop" edge to the SellerShop entity by ID if the given value is not nil.
+func (spc *SellerProductCreate) SetNillableShopID(id *int) *SellerProductCreate {
+	if id != nil {
+		spc = spc.SetShopID(*id)
+	}
+	return spc
+}
+
+// SetShop sets the "shop" edge to the SellerShop entity.
+func (spc *SellerProductCreate) SetShop(s *SellerShop) *SellerProductCreate {
+	return spc.SetShopID(s.ID)
 }
 
 // AddCartProductIDs adds the "cart_products" edge to the CartProduct entity by IDs.
@@ -296,21 +315,6 @@ func (spc *SellerProductCreate) AddSellerProductVariations(s ...*SellerProductVa
 		ids[i] = s[i].ID
 	}
 	return spc.AddSellerProductVariationIDs(ids...)
-}
-
-// AddSellerShopProductIDs adds the "seller_shop_products" edge to the SellerShopProduct entity by IDs.
-func (spc *SellerProductCreate) AddSellerShopProductIDs(ids ...int) *SellerProductCreate {
-	spc.mutation.AddSellerShopProductIDs(ids...)
-	return spc
-}
-
-// AddSellerShopProducts adds the "seller_shop_products" edges to the SellerShopProduct entity.
-func (spc *SellerProductCreate) AddSellerShopProducts(s ...*SellerShopProduct) *SellerProductCreate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return spc.AddSellerShopProductIDs(ids...)
 }
 
 // Mutation returns the SellerProductMutation object of the builder.
@@ -388,6 +392,10 @@ func (spc *SellerProductCreate) defaults() {
 		v := sellerproduct.DefaultActive
 		spc.mutation.SetActive(v)
 	}
+	if _, ok := spc.mutation.OfferPrice(); !ok {
+		v := sellerproduct.DefaultOfferPrice
+		spc.mutation.SetOfferPrice(v)
+	}
 	if _, ok := spc.mutation.CreatedAt(); !ok {
 		v := sellerproduct.DefaultCreatedAt()
 		spc.mutation.SetCreatedAt(v)
@@ -417,6 +425,9 @@ func (spc *SellerProductCreate) check() error {
 	}
 	if _, ok := spc.mutation.Active(); !ok {
 		return &ValidationError{Name: "active", err: errors.New(`ent: missing required field "active"`)}
+	}
+	if _, ok := spc.mutation.OfferPrice(); !ok {
+		return &ValidationError{Name: "offer_price", err: errors.New(`ent: missing required field "offer_price"`)}
 	}
 	if _, ok := spc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
@@ -513,7 +524,7 @@ func (spc *SellerProductCreate) createSpec() (*SellerProduct, *sqlgraph.CreateSp
 			Value:  value,
 			Column: sellerproduct.FieldOfferPrice,
 		})
-		_node.OfferPrice = &value
+		_node.OfferPrice = value
 	}
 	if value, ok := spc.mutation.OfferPriceStart(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -533,7 +544,7 @@ func (spc *SellerProductCreate) createSpec() (*SellerProduct, *sqlgraph.CreateSp
 	}
 	if value, ok := spc.mutation.NextStock(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
+			Type:   field.TypeTime,
 			Value:  value,
 			Column: sellerproduct.FieldNextStock,
 		})
@@ -622,23 +633,43 @@ func (spc *SellerProductCreate) createSpec() (*SellerProduct, *sqlgraph.CreateSp
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := spc.mutation.SellerProductCategoriesIDs(); len(nodes) > 0 {
+	if nodes := spc.mutation.CategoriesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellerproduct.SellerProductCategoriesTable,
-			Columns: []string{sellerproduct.SellerProductCategoriesColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   sellerproduct.CategoriesTable,
+			Columns: sellerproduct.CategoriesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: sellerproductcategory.FieldID,
+					Column: category.FieldID,
 				},
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := spc.mutation.ShopIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   sellerproduct.ShopTable,
+			Columns: []string{sellerproduct.ShopColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: sellershop.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.seller_shop_seller_products = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := spc.mutation.CartProductsIDs(); len(nodes) > 0 {
@@ -690,25 +721,6 @@ func (spc *SellerProductCreate) createSpec() (*SellerProduct, *sqlgraph.CreateSp
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: sellerproductvariation.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := spc.mutation.SellerShopProductsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellerproduct.SellerShopProductsTable,
-			Columns: []string{sellerproduct.SellerShopProductsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellershopproduct.FieldID,
 				},
 			},
 		}

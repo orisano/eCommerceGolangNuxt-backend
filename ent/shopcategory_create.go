@@ -5,6 +5,7 @@ package ent
 import (
 	"bongo/ent/category"
 	"bongo/ent/sellerrequest"
+	"bongo/ent/sellershop"
 	"bongo/ent/shopcategory"
 	"context"
 	"errors"
@@ -110,6 +111,21 @@ func (scc *ShopCategoryCreate) AddSellerRequests(s ...*SellerRequest) *ShopCateg
 		ids[i] = s[i].ID
 	}
 	return scc.AddSellerRequestIDs(ids...)
+}
+
+// AddSellerShopIDs adds the "seller_shops" edge to the SellerShop entity by IDs.
+func (scc *ShopCategoryCreate) AddSellerShopIDs(ids ...int) *ShopCategoryCreate {
+	scc.mutation.AddSellerShopIDs(ids...)
+	return scc
+}
+
+// AddSellerShops adds the "seller_shops" edges to the SellerShop entity.
+func (scc *ShopCategoryCreate) AddSellerShops(s ...*SellerShop) *ShopCategoryCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return scc.AddSellerShopIDs(ids...)
 }
 
 // Mutation returns the ShopCategoryMutation object of the builder.
@@ -315,6 +331,25 @@ func (scc *ShopCategoryCreate) createSpec() (*ShopCategory, *sqlgraph.CreateSpec
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: sellerrequest.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := scc.mutation.SellerShopsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   shopcategory.SellerShopsTable,
+			Columns: []string{shopcategory.SellerShopsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: sellershop.FieldID,
 				},
 			},
 		}

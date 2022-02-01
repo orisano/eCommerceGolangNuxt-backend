@@ -72,15 +72,8 @@ func (spvu *SellerProductVariationUpdate) AddQuantity(i int) *SellerProductVaria
 }
 
 // SetImage sets the "image" field.
-func (spvu *SellerProductVariationUpdate) SetImage(i int) *SellerProductVariationUpdate {
-	spvu.mutation.ResetImage()
-	spvu.mutation.SetImage(i)
-	return spvu
-}
-
-// AddImage adds i to the "image" field.
-func (spvu *SellerProductVariationUpdate) AddImage(i int) *SellerProductVariationUpdate {
-	spvu.mutation.AddImage(i)
+func (spvu *SellerProductVariationUpdate) SetImage(s string) *SellerProductVariationUpdate {
+	spvu.mutation.SetImage(s)
 	return spvu
 }
 
@@ -373,14 +366,7 @@ func (spvu *SellerProductVariationUpdate) sqlSave(ctx context.Context) (n int, e
 	}
 	if value, ok := spvu.mutation.Image(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: sellerproductvariation.FieldImage,
-		})
-	}
-	if value, ok := spvu.mutation.AddedImage(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeString,
 			Value:  value,
 			Column: sellerproductvariation.FieldImage,
 		})
@@ -661,15 +647,8 @@ func (spvuo *SellerProductVariationUpdateOne) AddQuantity(i int) *SellerProductV
 }
 
 // SetImage sets the "image" field.
-func (spvuo *SellerProductVariationUpdateOne) SetImage(i int) *SellerProductVariationUpdateOne {
-	spvuo.mutation.ResetImage()
-	spvuo.mutation.SetImage(i)
-	return spvuo
-}
-
-// AddImage adds i to the "image" field.
-func (spvuo *SellerProductVariationUpdateOne) AddImage(i int) *SellerProductVariationUpdateOne {
-	spvuo.mutation.AddImage(i)
+func (spvuo *SellerProductVariationUpdateOne) SetImage(s string) *SellerProductVariationUpdateOne {
+	spvuo.mutation.SetImage(s)
 	return spvuo
 }
 
@@ -986,14 +965,7 @@ func (spvuo *SellerProductVariationUpdateOne) sqlSave(ctx context.Context) (_nod
 	}
 	if value, ok := spvuo.mutation.Image(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: sellerproductvariation.FieldImage,
-		})
-	}
-	if value, ok := spvuo.mutation.AddedImage(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeString,
 			Value:  value,
 			Column: sellerproductvariation.FieldImage,
 		})

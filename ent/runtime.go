@@ -18,7 +18,6 @@ import (
 	"bongo/ent/sellerproductvariationvalues"
 	"bongo/ent/sellerrequest"
 	"bongo/ent/sellershop"
-	"bongo/ent/sellershopproduct"
 	"bongo/ent/shopcategory"
 	"bongo/ent/user"
 	"bongo/ent/userlocation"
@@ -107,6 +106,10 @@ func init() {
 	checkout.UpdateDefaultUpdatedAt = checkoutDescUpdatedAt.UpdateDefault.(func() time.Time)
 	checkoutproductFields := schema.CheckoutProduct{}.Fields()
 	_ = checkoutproductFields
+	// checkoutproductDescOfferPrice is the schema descriptor for offer_price field.
+	checkoutproductDescOfferPrice := checkoutproductFields[2].Descriptor()
+	// checkoutproduct.DefaultOfferPrice holds the default value on creation for the offer_price field.
+	checkoutproduct.DefaultOfferPrice = checkoutproductDescOfferPrice.Default.(int)
 	// checkoutproductDescReceived is the schema descriptor for received field.
 	checkoutproductDescReceived := checkoutproductFields[3].Descriptor()
 	// checkoutproduct.DefaultReceived holds the default value on creation for the received field.
@@ -131,6 +134,10 @@ func init() {
 	sellerproductDescActive := sellerproductFields[5].Descriptor()
 	// sellerproduct.DefaultActive holds the default value on creation for the active field.
 	sellerproduct.DefaultActive = sellerproductDescActive.Default.(bool)
+	// sellerproductDescOfferPrice is the schema descriptor for offer_price field.
+	sellerproductDescOfferPrice := sellerproductFields[7].Descriptor()
+	// sellerproduct.DefaultOfferPrice holds the default value on creation for the offer_price field.
+	sellerproduct.DefaultOfferPrice = sellerproductDescOfferPrice.Default.(int)
 	// sellerproductDescCreatedAt is the schema descriptor for created_at field.
 	sellerproductDescCreatedAt := sellerproductFields[11].Descriptor()
 	// sellerproduct.DefaultCreatedAt holds the default value on creation for the created_at field.
@@ -219,28 +226,20 @@ func init() {
 	sellershopDescContactNumber := sellershopFields[2].Descriptor()
 	// sellershop.ContactNumberValidator is a validator for the "contact_number" field. It is called by the builders before save.
 	sellershop.ContactNumberValidator = sellershopDescContactNumber.Validators[0].(func(string) error)
+	// sellershopDescActive is the schema descriptor for active field.
+	sellershopDescActive := sellershopFields[6].Descriptor()
+	// sellershop.DefaultActive holds the default value on creation for the active field.
+	sellershop.DefaultActive = sellershopDescActive.Default.(bool)
 	// sellershopDescCreatedAt is the schema descriptor for created_at field.
-	sellershopDescCreatedAt := sellershopFields[9].Descriptor()
+	sellershopDescCreatedAt := sellershopFields[7].Descriptor()
 	// sellershop.DefaultCreatedAt holds the default value on creation for the created_at field.
 	sellershop.DefaultCreatedAt = sellershopDescCreatedAt.Default.(func() time.Time)
 	// sellershopDescUpdatedAt is the schema descriptor for updated_at field.
-	sellershopDescUpdatedAt := sellershopFields[10].Descriptor()
+	sellershopDescUpdatedAt := sellershopFields[8].Descriptor()
 	// sellershop.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	sellershop.DefaultUpdatedAt = sellershopDescUpdatedAt.Default.(func() time.Time)
 	// sellershop.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	sellershop.UpdateDefaultUpdatedAt = sellershopDescUpdatedAt.UpdateDefault.(func() time.Time)
-	sellershopproductFields := schema.SellerShopProduct{}.Fields()
-	_ = sellershopproductFields
-	// sellershopproductDescCreatedAt is the schema descriptor for created_at field.
-	sellershopproductDescCreatedAt := sellershopproductFields[0].Descriptor()
-	// sellershopproduct.DefaultCreatedAt holds the default value on creation for the created_at field.
-	sellershopproduct.DefaultCreatedAt = sellershopproductDescCreatedAt.Default.(func() time.Time)
-	// sellershopproductDescUpdatedAt is the schema descriptor for updated_at field.
-	sellershopproductDescUpdatedAt := sellershopproductFields[1].Descriptor()
-	// sellershopproduct.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	sellershopproduct.DefaultUpdatedAt = sellershopproductDescUpdatedAt.Default.(func() time.Time)
-	// sellershopproduct.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	sellershopproduct.UpdateDefaultUpdatedAt = sellershopproductDescUpdatedAt.UpdateDefault.(func() time.Time)
 	shopcategoryFields := schema.ShopCategory{}.Fields()
 	_ = shopcategoryFields
 	// shopcategoryDescCreatedAt is the schema descriptor for created_at field.

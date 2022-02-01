@@ -5,6 +5,7 @@ package ent
 import (
 	"bongo/ent/brand"
 	"bongo/ent/sellerproduct"
+	"bongo/ent/sellershop"
 	"bongo/ent/user"
 	"fmt"
 	"strings"
@@ -34,13 +35,13 @@ type SellerProduct struct {
 	// Description holds the value of the "description" field.
 	Description *string `json:"description,omitempty"`
 	// OfferPrice holds the value of the "offer_price" field.
-	OfferPrice *int `json:"offer_price,omitempty"`
+	OfferPrice int `json:"offer_price,omitempty"`
 	// OfferPriceStart holds the value of the "offer_price_start" field.
 	OfferPriceStart *time.Time `json:"offer_price_start,omitempty"`
 	// OfferPriceEnd holds the value of the "offer_price_end" field.
 	OfferPriceEnd *time.Time `json:"offer_price_end,omitempty"`
 	// NextStock holds the value of the "next_stock" field.
-	NextStock *string `json:"next_stock,omitempty"`
+	NextStock *time.Time `json:"next_stock,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -63,16 +64,16 @@ type SellerProductEdges struct {
 	User *User `json:"user,omitempty"`
 	// SellerProductImages holds the value of the seller_product_images edge.
 	SellerProductImages []*SellerProductImage `json:"seller_product_images,omitempty"`
-	// SellerProductCategories holds the value of the seller_product_categories edge.
-	SellerProductCategories []*SellerProductCategory `json:"seller_product_categories,omitempty"`
+	// Categories holds the value of the categories edge.
+	Categories []*Category `json:"categories,omitempty"`
+	// Shop holds the value of the shop edge.
+	Shop *SellerShop `json:"shop,omitempty"`
 	// CartProducts holds the value of the cart_products edge.
 	CartProducts []*CartProduct `json:"cart_products,omitempty"`
 	// CheckoutProducts holds the value of the checkout_products edge.
 	CheckoutProducts []*CheckoutProduct `json:"checkout_products,omitempty"`
 	// SellerProductVariations holds the value of the seller_product_variations edge.
 	SellerProductVariations []*SellerProductVariation `json:"seller_product_variations,omitempty"`
-	// SellerShopProducts holds the value of the seller_shop_products edge.
-	SellerShopProducts []*SellerShopProduct `json:"seller_shop_products,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [8]bool
@@ -115,19 +116,33 @@ func (e SellerProductEdges) SellerProductImagesOrErr() ([]*SellerProductImage, e
 	return nil, &NotLoadedError{edge: "seller_product_images"}
 }
 
-// SellerProductCategoriesOrErr returns the SellerProductCategories value or an error if the edge
+// CategoriesOrErr returns the Categories value or an error if the edge
 // was not loaded in eager-loading.
-func (e SellerProductEdges) SellerProductCategoriesOrErr() ([]*SellerProductCategory, error) {
+func (e SellerProductEdges) CategoriesOrErr() ([]*Category, error) {
 	if e.loadedTypes[3] {
-		return e.SellerProductCategories, nil
+		return e.Categories, nil
 	}
-	return nil, &NotLoadedError{edge: "seller_product_categories"}
+	return nil, &NotLoadedError{edge: "categories"}
+}
+
+// ShopOrErr returns the Shop value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SellerProductEdges) ShopOrErr() (*SellerShop, error) {
+	if e.loadedTypes[4] {
+		if e.Shop == nil {
+			// The edge shop was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: sellershop.Label}
+		}
+		return e.Shop, nil
+	}
+	return nil, &NotLoadedError{edge: "shop"}
 }
 
 // CartProductsOrErr returns the CartProducts value or an error if the edge
 // was not loaded in eager-loading.
 func (e SellerProductEdges) CartProductsOrErr() ([]*CartProduct, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.CartProducts, nil
 	}
 	return nil, &NotLoadedError{edge: "cart_products"}
@@ -136,7 +151,7 @@ func (e SellerProductEdges) CartProductsOrErr() ([]*CartProduct, error) {
 // CheckoutProductsOrErr returns the CheckoutProducts value or an error if the edge
 // was not loaded in eager-loading.
 func (e SellerProductEdges) CheckoutProductsOrErr() ([]*CheckoutProduct, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[6] {
 		return e.CheckoutProducts, nil
 	}
 	return nil, &NotLoadedError{edge: "checkout_products"}
@@ -145,19 +160,10 @@ func (e SellerProductEdges) CheckoutProductsOrErr() ([]*CheckoutProduct, error) 
 // SellerProductVariationsOrErr returns the SellerProductVariations value or an error if the edge
 // was not loaded in eager-loading.
 func (e SellerProductEdges) SellerProductVariationsOrErr() ([]*SellerProductVariation, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[7] {
 		return e.SellerProductVariations, nil
 	}
 	return nil, &NotLoadedError{edge: "seller_product_variations"}
-}
-
-// SellerShopProductsOrErr returns the SellerShopProducts value or an error if the edge
-// was not loaded in eager-loading.
-func (e SellerProductEdges) SellerShopProductsOrErr() ([]*SellerShopProduct, error) {
-	if e.loadedTypes[7] {
-		return e.SellerShopProducts, nil
-	}
-	return nil, &NotLoadedError{edge: "seller_shop_products"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -171,9 +177,9 @@ func (*SellerProduct) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullBool)
 		case sellerproduct.FieldID, sellerproduct.FieldQuantity, sellerproduct.FieldOfferPrice:
 			values[i] = new(sql.NullInt64)
-		case sellerproduct.FieldName, sellerproduct.FieldSlug, sellerproduct.FieldDescription, sellerproduct.FieldNextStock:
+		case sellerproduct.FieldName, sellerproduct.FieldSlug, sellerproduct.FieldDescription:
 			values[i] = new(sql.NullString)
-		case sellerproduct.FieldOfferPriceStart, sellerproduct.FieldOfferPriceEnd, sellerproduct.FieldCreatedAt, sellerproduct.FieldUpdatedAt, sellerproduct.FieldDeletedAt:
+		case sellerproduct.FieldOfferPriceStart, sellerproduct.FieldOfferPriceEnd, sellerproduct.FieldNextStock, sellerproduct.FieldCreatedAt, sellerproduct.FieldUpdatedAt, sellerproduct.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
 		case sellerproduct.ForeignKeys[0]: // brand_brand
 			values[i] = new(sql.NullInt64)
@@ -249,8 +255,7 @@ func (sp *SellerProduct) assignValues(columns []string, values []interface{}) er
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field offer_price", values[i])
 			} else if value.Valid {
-				sp.OfferPrice = new(int)
-				*sp.OfferPrice = int(value.Int64)
+				sp.OfferPrice = int(value.Int64)
 			}
 		case sellerproduct.FieldOfferPriceStart:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -267,11 +272,11 @@ func (sp *SellerProduct) assignValues(columns []string, values []interface{}) er
 				*sp.OfferPriceEnd = value.Time
 			}
 		case sellerproduct.FieldNextStock:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field next_stock", values[i])
 			} else if value.Valid {
-				sp.NextStock = new(string)
-				*sp.NextStock = value.String
+				sp.NextStock = new(time.Time)
+				*sp.NextStock = value.Time
 			}
 		case sellerproduct.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -333,9 +338,14 @@ func (sp *SellerProduct) QuerySellerProductImages() *SellerProductImageQuery {
 	return (&SellerProductClient{config: sp.config}).QuerySellerProductImages(sp)
 }
 
-// QuerySellerProductCategories queries the "seller_product_categories" edge of the SellerProduct entity.
-func (sp *SellerProduct) QuerySellerProductCategories() *SellerProductCategoryQuery {
-	return (&SellerProductClient{config: sp.config}).QuerySellerProductCategories(sp)
+// QueryCategories queries the "categories" edge of the SellerProduct entity.
+func (sp *SellerProduct) QueryCategories() *CategoryQuery {
+	return (&SellerProductClient{config: sp.config}).QueryCategories(sp)
+}
+
+// QueryShop queries the "shop" edge of the SellerProduct entity.
+func (sp *SellerProduct) QueryShop() *SellerShopQuery {
+	return (&SellerProductClient{config: sp.config}).QueryShop(sp)
 }
 
 // QueryCartProducts queries the "cart_products" edge of the SellerProduct entity.
@@ -351,11 +361,6 @@ func (sp *SellerProduct) QueryCheckoutProducts() *CheckoutProductQuery {
 // QuerySellerProductVariations queries the "seller_product_variations" edge of the SellerProduct entity.
 func (sp *SellerProduct) QuerySellerProductVariations() *SellerProductVariationQuery {
 	return (&SellerProductClient{config: sp.config}).QuerySellerProductVariations(sp)
-}
-
-// QuerySellerShopProducts queries the "seller_shop_products" edge of the SellerProduct entity.
-func (sp *SellerProduct) QuerySellerShopProducts() *SellerShopProductQuery {
-	return (&SellerProductClient{config: sp.config}).QuerySellerShopProducts(sp)
 }
 
 // Update returns a builder for updating this SellerProduct.
@@ -397,10 +402,8 @@ func (sp *SellerProduct) String() string {
 		builder.WriteString(", description=")
 		builder.WriteString(*v)
 	}
-	if v := sp.OfferPrice; v != nil {
-		builder.WriteString(", offer_price=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
+	builder.WriteString(", offer_price=")
+	builder.WriteString(fmt.Sprintf("%v", sp.OfferPrice))
 	if v := sp.OfferPriceStart; v != nil {
 		builder.WriteString(", offer_price_start=")
 		builder.WriteString(v.Format(time.ANSIC))
@@ -411,7 +414,7 @@ func (sp *SellerProduct) String() string {
 	}
 	if v := sp.NextStock; v != nil {
 		builder.WriteString(", next_stock=")
-		builder.WriteString(*v)
+		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", created_at=")
 	builder.WriteString(sp.CreatedAt.Format(time.ANSIC))

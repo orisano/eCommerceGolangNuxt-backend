@@ -3,9 +3,7 @@
 package ent
 
 import (
-	"bongo/ent/category"
 	"bongo/ent/predicate"
-	"bongo/ent/sellerproduct"
 	"bongo/ent/sellerproductcategory"
 	"context"
 	"fmt"
@@ -55,59 +53,9 @@ func (spcu *SellerProductCategoryUpdate) ClearDeletedAt() *SellerProductCategory
 	return spcu
 }
 
-// SetSellerProductID sets the "seller_product" edge to the SellerProduct entity by ID.
-func (spcu *SellerProductCategoryUpdate) SetSellerProductID(id int) *SellerProductCategoryUpdate {
-	spcu.mutation.SetSellerProductID(id)
-	return spcu
-}
-
-// SetNillableSellerProductID sets the "seller_product" edge to the SellerProduct entity by ID if the given value is not nil.
-func (spcu *SellerProductCategoryUpdate) SetNillableSellerProductID(id *int) *SellerProductCategoryUpdate {
-	if id != nil {
-		spcu = spcu.SetSellerProductID(*id)
-	}
-	return spcu
-}
-
-// SetSellerProduct sets the "seller_product" edge to the SellerProduct entity.
-func (spcu *SellerProductCategoryUpdate) SetSellerProduct(s *SellerProduct) *SellerProductCategoryUpdate {
-	return spcu.SetSellerProductID(s.ID)
-}
-
-// SetCategoryID sets the "category" edge to the Category entity by ID.
-func (spcu *SellerProductCategoryUpdate) SetCategoryID(id int) *SellerProductCategoryUpdate {
-	spcu.mutation.SetCategoryID(id)
-	return spcu
-}
-
-// SetNillableCategoryID sets the "category" edge to the Category entity by ID if the given value is not nil.
-func (spcu *SellerProductCategoryUpdate) SetNillableCategoryID(id *int) *SellerProductCategoryUpdate {
-	if id != nil {
-		spcu = spcu.SetCategoryID(*id)
-	}
-	return spcu
-}
-
-// SetCategory sets the "category" edge to the Category entity.
-func (spcu *SellerProductCategoryUpdate) SetCategory(c *Category) *SellerProductCategoryUpdate {
-	return spcu.SetCategoryID(c.ID)
-}
-
 // Mutation returns the SellerProductCategoryMutation object of the builder.
 func (spcu *SellerProductCategoryUpdate) Mutation() *SellerProductCategoryMutation {
 	return spcu.mutation
-}
-
-// ClearSellerProduct clears the "seller_product" edge to the SellerProduct entity.
-func (spcu *SellerProductCategoryUpdate) ClearSellerProduct() *SellerProductCategoryUpdate {
-	spcu.mutation.ClearSellerProduct()
-	return spcu
-}
-
-// ClearCategory clears the "category" edge to the Category entity.
-func (spcu *SellerProductCategoryUpdate) ClearCategory() *SellerProductCategoryUpdate {
-	spcu.mutation.ClearCategory()
-	return spcu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -211,76 +159,6 @@ func (spcu *SellerProductCategoryUpdate) sqlSave(ctx context.Context) (n int, er
 			Column: sellerproductcategory.FieldDeletedAt,
 		})
 	}
-	if spcu.mutation.SellerProductCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   sellerproductcategory.SellerProductTable,
-			Columns: []string{sellerproductcategory.SellerProductColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellerproduct.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := spcu.mutation.SellerProductIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   sellerproductcategory.SellerProductTable,
-			Columns: []string{sellerproductcategory.SellerProductColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellerproduct.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if spcu.mutation.CategoryCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   sellerproductcategory.CategoryTable,
-			Columns: []string{sellerproductcategory.CategoryColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: category.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := spcu.mutation.CategoryIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   sellerproductcategory.CategoryTable,
-			Columns: []string{sellerproductcategory.CategoryColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: category.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, spcu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{sellerproductcategory.Label}
@@ -326,59 +204,9 @@ func (spcuo *SellerProductCategoryUpdateOne) ClearDeletedAt() *SellerProductCate
 	return spcuo
 }
 
-// SetSellerProductID sets the "seller_product" edge to the SellerProduct entity by ID.
-func (spcuo *SellerProductCategoryUpdateOne) SetSellerProductID(id int) *SellerProductCategoryUpdateOne {
-	spcuo.mutation.SetSellerProductID(id)
-	return spcuo
-}
-
-// SetNillableSellerProductID sets the "seller_product" edge to the SellerProduct entity by ID if the given value is not nil.
-func (spcuo *SellerProductCategoryUpdateOne) SetNillableSellerProductID(id *int) *SellerProductCategoryUpdateOne {
-	if id != nil {
-		spcuo = spcuo.SetSellerProductID(*id)
-	}
-	return spcuo
-}
-
-// SetSellerProduct sets the "seller_product" edge to the SellerProduct entity.
-func (spcuo *SellerProductCategoryUpdateOne) SetSellerProduct(s *SellerProduct) *SellerProductCategoryUpdateOne {
-	return spcuo.SetSellerProductID(s.ID)
-}
-
-// SetCategoryID sets the "category" edge to the Category entity by ID.
-func (spcuo *SellerProductCategoryUpdateOne) SetCategoryID(id int) *SellerProductCategoryUpdateOne {
-	spcuo.mutation.SetCategoryID(id)
-	return spcuo
-}
-
-// SetNillableCategoryID sets the "category" edge to the Category entity by ID if the given value is not nil.
-func (spcuo *SellerProductCategoryUpdateOne) SetNillableCategoryID(id *int) *SellerProductCategoryUpdateOne {
-	if id != nil {
-		spcuo = spcuo.SetCategoryID(*id)
-	}
-	return spcuo
-}
-
-// SetCategory sets the "category" edge to the Category entity.
-func (spcuo *SellerProductCategoryUpdateOne) SetCategory(c *Category) *SellerProductCategoryUpdateOne {
-	return spcuo.SetCategoryID(c.ID)
-}
-
 // Mutation returns the SellerProductCategoryMutation object of the builder.
 func (spcuo *SellerProductCategoryUpdateOne) Mutation() *SellerProductCategoryMutation {
 	return spcuo.mutation
-}
-
-// ClearSellerProduct clears the "seller_product" edge to the SellerProduct entity.
-func (spcuo *SellerProductCategoryUpdateOne) ClearSellerProduct() *SellerProductCategoryUpdateOne {
-	spcuo.mutation.ClearSellerProduct()
-	return spcuo
-}
-
-// ClearCategory clears the "category" edge to the Category entity.
-func (spcuo *SellerProductCategoryUpdateOne) ClearCategory() *SellerProductCategoryUpdateOne {
-	spcuo.mutation.ClearCategory()
-	return spcuo
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -505,76 +333,6 @@ func (spcuo *SellerProductCategoryUpdateOne) sqlSave(ctx context.Context) (_node
 			Type:   field.TypeTime,
 			Column: sellerproductcategory.FieldDeletedAt,
 		})
-	}
-	if spcuo.mutation.SellerProductCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   sellerproductcategory.SellerProductTable,
-			Columns: []string{sellerproductcategory.SellerProductColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellerproduct.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := spcuo.mutation.SellerProductIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   sellerproductcategory.SellerProductTable,
-			Columns: []string{sellerproductcategory.SellerProductColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellerproduct.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if spcuo.mutation.CategoryCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   sellerproductcategory.CategoryTable,
-			Columns: []string{sellerproductcategory.CategoryColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: category.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := spcuo.mutation.CategoryIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   sellerproductcategory.CategoryTable,
-			Columns: []string{sellerproductcategory.CategoryColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: category.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &SellerProductCategory{config: spcuo.config}
 	_spec.Assign = _node.assignValues

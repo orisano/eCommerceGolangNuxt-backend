@@ -5,13 +5,13 @@ package ent
 import (
 	"bongo/ent/brand"
 	"bongo/ent/cartproduct"
+	"bongo/ent/category"
 	"bongo/ent/checkoutproduct"
 	"bongo/ent/predicate"
 	"bongo/ent/sellerproduct"
-	"bongo/ent/sellerproductcategory"
 	"bongo/ent/sellerproductimage"
 	"bongo/ent/sellerproductvariation"
-	"bongo/ent/sellershopproduct"
+	"bongo/ent/sellershop"
 	"bongo/ent/user"
 	"context"
 	"fmt"
@@ -142,12 +142,6 @@ func (spu *SellerProductUpdate) AddOfferPrice(i int) *SellerProductUpdate {
 	return spu
 }
 
-// ClearOfferPrice clears the value of the "offer_price" field.
-func (spu *SellerProductUpdate) ClearOfferPrice() *SellerProductUpdate {
-	spu.mutation.ClearOfferPrice()
-	return spu
-}
-
 // SetOfferPriceStart sets the "offer_price_start" field.
 func (spu *SellerProductUpdate) SetOfferPriceStart(t time.Time) *SellerProductUpdate {
 	spu.mutation.SetOfferPriceStart(t)
@@ -189,15 +183,15 @@ func (spu *SellerProductUpdate) ClearOfferPriceEnd() *SellerProductUpdate {
 }
 
 // SetNextStock sets the "next_stock" field.
-func (spu *SellerProductUpdate) SetNextStock(s string) *SellerProductUpdate {
-	spu.mutation.SetNextStock(s)
+func (spu *SellerProductUpdate) SetNextStock(t time.Time) *SellerProductUpdate {
+	spu.mutation.SetNextStock(t)
 	return spu
 }
 
 // SetNillableNextStock sets the "next_stock" field if the given value is not nil.
-func (spu *SellerProductUpdate) SetNillableNextStock(s *string) *SellerProductUpdate {
-	if s != nil {
-		spu.SetNextStock(*s)
+func (spu *SellerProductUpdate) SetNillableNextStock(t *time.Time) *SellerProductUpdate {
+	if t != nil {
+		spu.SetNextStock(*t)
 	}
 	return spu
 }
@@ -287,19 +281,38 @@ func (spu *SellerProductUpdate) AddSellerProductImages(s ...*SellerProductImage)
 	return spu.AddSellerProductImageIDs(ids...)
 }
 
-// AddSellerProductCategoryIDs adds the "seller_product_categories" edge to the SellerProductCategory entity by IDs.
-func (spu *SellerProductUpdate) AddSellerProductCategoryIDs(ids ...int) *SellerProductUpdate {
-	spu.mutation.AddSellerProductCategoryIDs(ids...)
+// AddCategoryIDs adds the "categories" edge to the Category entity by IDs.
+func (spu *SellerProductUpdate) AddCategoryIDs(ids ...int) *SellerProductUpdate {
+	spu.mutation.AddCategoryIDs(ids...)
 	return spu
 }
 
-// AddSellerProductCategories adds the "seller_product_categories" edges to the SellerProductCategory entity.
-func (spu *SellerProductUpdate) AddSellerProductCategories(s ...*SellerProductCategory) *SellerProductUpdate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// AddCategories adds the "categories" edges to the Category entity.
+func (spu *SellerProductUpdate) AddCategories(c ...*Category) *SellerProductUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
 	}
-	return spu.AddSellerProductCategoryIDs(ids...)
+	return spu.AddCategoryIDs(ids...)
+}
+
+// SetShopID sets the "shop" edge to the SellerShop entity by ID.
+func (spu *SellerProductUpdate) SetShopID(id int) *SellerProductUpdate {
+	spu.mutation.SetShopID(id)
+	return spu
+}
+
+// SetNillableShopID sets the "shop" edge to the SellerShop entity by ID if the given value is not nil.
+func (spu *SellerProductUpdate) SetNillableShopID(id *int) *SellerProductUpdate {
+	if id != nil {
+		spu = spu.SetShopID(*id)
+	}
+	return spu
+}
+
+// SetShop sets the "shop" edge to the SellerShop entity.
+func (spu *SellerProductUpdate) SetShop(s *SellerShop) *SellerProductUpdate {
+	return spu.SetShopID(s.ID)
 }
 
 // AddCartProductIDs adds the "cart_products" edge to the CartProduct entity by IDs.
@@ -347,21 +360,6 @@ func (spu *SellerProductUpdate) AddSellerProductVariations(s ...*SellerProductVa
 	return spu.AddSellerProductVariationIDs(ids...)
 }
 
-// AddSellerShopProductIDs adds the "seller_shop_products" edge to the SellerShopProduct entity by IDs.
-func (spu *SellerProductUpdate) AddSellerShopProductIDs(ids ...int) *SellerProductUpdate {
-	spu.mutation.AddSellerShopProductIDs(ids...)
-	return spu
-}
-
-// AddSellerShopProducts adds the "seller_shop_products" edges to the SellerShopProduct entity.
-func (spu *SellerProductUpdate) AddSellerShopProducts(s ...*SellerShopProduct) *SellerProductUpdate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return spu.AddSellerShopProductIDs(ids...)
-}
-
 // Mutation returns the SellerProductMutation object of the builder.
 func (spu *SellerProductUpdate) Mutation() *SellerProductMutation {
 	return spu.mutation
@@ -400,25 +398,31 @@ func (spu *SellerProductUpdate) RemoveSellerProductImages(s ...*SellerProductIma
 	return spu.RemoveSellerProductImageIDs(ids...)
 }
 
-// ClearSellerProductCategories clears all "seller_product_categories" edges to the SellerProductCategory entity.
-func (spu *SellerProductUpdate) ClearSellerProductCategories() *SellerProductUpdate {
-	spu.mutation.ClearSellerProductCategories()
+// ClearCategories clears all "categories" edges to the Category entity.
+func (spu *SellerProductUpdate) ClearCategories() *SellerProductUpdate {
+	spu.mutation.ClearCategories()
 	return spu
 }
 
-// RemoveSellerProductCategoryIDs removes the "seller_product_categories" edge to SellerProductCategory entities by IDs.
-func (spu *SellerProductUpdate) RemoveSellerProductCategoryIDs(ids ...int) *SellerProductUpdate {
-	spu.mutation.RemoveSellerProductCategoryIDs(ids...)
+// RemoveCategoryIDs removes the "categories" edge to Category entities by IDs.
+func (spu *SellerProductUpdate) RemoveCategoryIDs(ids ...int) *SellerProductUpdate {
+	spu.mutation.RemoveCategoryIDs(ids...)
 	return spu
 }
 
-// RemoveSellerProductCategories removes "seller_product_categories" edges to SellerProductCategory entities.
-func (spu *SellerProductUpdate) RemoveSellerProductCategories(s ...*SellerProductCategory) *SellerProductUpdate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// RemoveCategories removes "categories" edges to Category entities.
+func (spu *SellerProductUpdate) RemoveCategories(c ...*Category) *SellerProductUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
 	}
-	return spu.RemoveSellerProductCategoryIDs(ids...)
+	return spu.RemoveCategoryIDs(ids...)
+}
+
+// ClearShop clears the "shop" edge to the SellerShop entity.
+func (spu *SellerProductUpdate) ClearShop() *SellerProductUpdate {
+	spu.mutation.ClearShop()
+	return spu
 }
 
 // ClearCartProducts clears all "cart_products" edges to the CartProduct entity.
@@ -482,27 +486,6 @@ func (spu *SellerProductUpdate) RemoveSellerProductVariations(s ...*SellerProduc
 		ids[i] = s[i].ID
 	}
 	return spu.RemoveSellerProductVariationIDs(ids...)
-}
-
-// ClearSellerShopProducts clears all "seller_shop_products" edges to the SellerShopProduct entity.
-func (spu *SellerProductUpdate) ClearSellerShopProducts() *SellerProductUpdate {
-	spu.mutation.ClearSellerShopProducts()
-	return spu
-}
-
-// RemoveSellerShopProductIDs removes the "seller_shop_products" edge to SellerShopProduct entities by IDs.
-func (spu *SellerProductUpdate) RemoveSellerShopProductIDs(ids ...int) *SellerProductUpdate {
-	spu.mutation.RemoveSellerShopProductIDs(ids...)
-	return spu
-}
-
-// RemoveSellerShopProducts removes "seller_shop_products" edges to SellerShopProduct entities.
-func (spu *SellerProductUpdate) RemoveSellerShopProducts(s ...*SellerShopProduct) *SellerProductUpdate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return spu.RemoveSellerShopProductIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -676,12 +659,6 @@ func (spu *SellerProductUpdate) sqlSave(ctx context.Context) (n int, err error) 
 			Column: sellerproduct.FieldOfferPrice,
 		})
 	}
-	if spu.mutation.OfferPriceCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Column: sellerproduct.FieldOfferPrice,
-		})
-	}
 	if value, ok := spu.mutation.OfferPriceStart(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -710,14 +687,14 @@ func (spu *SellerProductUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	}
 	if value, ok := spu.mutation.NextStock(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
+			Type:   field.TypeTime,
 			Value:  value,
 			Column: sellerproduct.FieldNextStock,
 		})
 	}
 	if spu.mutation.NextStockCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
+			Type:   field.TypeTime,
 			Column: sellerproduct.FieldNextStock,
 		})
 	}
@@ -865,33 +842,33 @@ func (spu *SellerProductUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if spu.mutation.SellerProductCategoriesCleared() {
+	if spu.mutation.CategoriesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellerproduct.SellerProductCategoriesTable,
-			Columns: []string{sellerproduct.SellerProductCategoriesColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   sellerproduct.CategoriesTable,
+			Columns: sellerproduct.CategoriesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: sellerproductcategory.FieldID,
+					Column: category.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := spu.mutation.RemovedSellerProductCategoriesIDs(); len(nodes) > 0 && !spu.mutation.SellerProductCategoriesCleared() {
+	if nodes := spu.mutation.RemovedCategoriesIDs(); len(nodes) > 0 && !spu.mutation.CategoriesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellerproduct.SellerProductCategoriesTable,
-			Columns: []string{sellerproduct.SellerProductCategoriesColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   sellerproduct.CategoriesTable,
+			Columns: sellerproduct.CategoriesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: sellerproductcategory.FieldID,
+					Column: category.FieldID,
 				},
 			},
 		}
@@ -900,17 +877,52 @@ func (spu *SellerProductUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := spu.mutation.SellerProductCategoriesIDs(); len(nodes) > 0 {
+	if nodes := spu.mutation.CategoriesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellerproduct.SellerProductCategoriesTable,
-			Columns: []string{sellerproduct.SellerProductCategoriesColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   sellerproduct.CategoriesTable,
+			Columns: sellerproduct.CategoriesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: sellerproductcategory.FieldID,
+					Column: category.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if spu.mutation.ShopCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   sellerproduct.ShopTable,
+			Columns: []string{sellerproduct.ShopColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: sellershop.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := spu.mutation.ShopIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   sellerproduct.ShopTable,
+			Columns: []string{sellerproduct.ShopColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: sellershop.FieldID,
 				},
 			},
 		}
@@ -1081,60 +1093,6 @@ func (spu *SellerProductUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if spu.mutation.SellerShopProductsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellerproduct.SellerShopProductsTable,
-			Columns: []string{sellerproduct.SellerShopProductsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellershopproduct.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := spu.mutation.RemovedSellerShopProductsIDs(); len(nodes) > 0 && !spu.mutation.SellerShopProductsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellerproduct.SellerShopProductsTable,
-			Columns: []string{sellerproduct.SellerShopProductsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellershopproduct.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := spu.mutation.SellerShopProductsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellerproduct.SellerShopProductsTable,
-			Columns: []string{sellerproduct.SellerShopProductsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellershopproduct.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, spu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{sellerproduct.Label}
@@ -1260,12 +1218,6 @@ func (spuo *SellerProductUpdateOne) AddOfferPrice(i int) *SellerProductUpdateOne
 	return spuo
 }
 
-// ClearOfferPrice clears the value of the "offer_price" field.
-func (spuo *SellerProductUpdateOne) ClearOfferPrice() *SellerProductUpdateOne {
-	spuo.mutation.ClearOfferPrice()
-	return spuo
-}
-
 // SetOfferPriceStart sets the "offer_price_start" field.
 func (spuo *SellerProductUpdateOne) SetOfferPriceStart(t time.Time) *SellerProductUpdateOne {
 	spuo.mutation.SetOfferPriceStart(t)
@@ -1307,15 +1259,15 @@ func (spuo *SellerProductUpdateOne) ClearOfferPriceEnd() *SellerProductUpdateOne
 }
 
 // SetNextStock sets the "next_stock" field.
-func (spuo *SellerProductUpdateOne) SetNextStock(s string) *SellerProductUpdateOne {
-	spuo.mutation.SetNextStock(s)
+func (spuo *SellerProductUpdateOne) SetNextStock(t time.Time) *SellerProductUpdateOne {
+	spuo.mutation.SetNextStock(t)
 	return spuo
 }
 
 // SetNillableNextStock sets the "next_stock" field if the given value is not nil.
-func (spuo *SellerProductUpdateOne) SetNillableNextStock(s *string) *SellerProductUpdateOne {
-	if s != nil {
-		spuo.SetNextStock(*s)
+func (spuo *SellerProductUpdateOne) SetNillableNextStock(t *time.Time) *SellerProductUpdateOne {
+	if t != nil {
+		spuo.SetNextStock(*t)
 	}
 	return spuo
 }
@@ -1405,19 +1357,38 @@ func (spuo *SellerProductUpdateOne) AddSellerProductImages(s ...*SellerProductIm
 	return spuo.AddSellerProductImageIDs(ids...)
 }
 
-// AddSellerProductCategoryIDs adds the "seller_product_categories" edge to the SellerProductCategory entity by IDs.
-func (spuo *SellerProductUpdateOne) AddSellerProductCategoryIDs(ids ...int) *SellerProductUpdateOne {
-	spuo.mutation.AddSellerProductCategoryIDs(ids...)
+// AddCategoryIDs adds the "categories" edge to the Category entity by IDs.
+func (spuo *SellerProductUpdateOne) AddCategoryIDs(ids ...int) *SellerProductUpdateOne {
+	spuo.mutation.AddCategoryIDs(ids...)
 	return spuo
 }
 
-// AddSellerProductCategories adds the "seller_product_categories" edges to the SellerProductCategory entity.
-func (spuo *SellerProductUpdateOne) AddSellerProductCategories(s ...*SellerProductCategory) *SellerProductUpdateOne {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// AddCategories adds the "categories" edges to the Category entity.
+func (spuo *SellerProductUpdateOne) AddCategories(c ...*Category) *SellerProductUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
 	}
-	return spuo.AddSellerProductCategoryIDs(ids...)
+	return spuo.AddCategoryIDs(ids...)
+}
+
+// SetShopID sets the "shop" edge to the SellerShop entity by ID.
+func (spuo *SellerProductUpdateOne) SetShopID(id int) *SellerProductUpdateOne {
+	spuo.mutation.SetShopID(id)
+	return spuo
+}
+
+// SetNillableShopID sets the "shop" edge to the SellerShop entity by ID if the given value is not nil.
+func (spuo *SellerProductUpdateOne) SetNillableShopID(id *int) *SellerProductUpdateOne {
+	if id != nil {
+		spuo = spuo.SetShopID(*id)
+	}
+	return spuo
+}
+
+// SetShop sets the "shop" edge to the SellerShop entity.
+func (spuo *SellerProductUpdateOne) SetShop(s *SellerShop) *SellerProductUpdateOne {
+	return spuo.SetShopID(s.ID)
 }
 
 // AddCartProductIDs adds the "cart_products" edge to the CartProduct entity by IDs.
@@ -1465,21 +1436,6 @@ func (spuo *SellerProductUpdateOne) AddSellerProductVariations(s ...*SellerProdu
 	return spuo.AddSellerProductVariationIDs(ids...)
 }
 
-// AddSellerShopProductIDs adds the "seller_shop_products" edge to the SellerShopProduct entity by IDs.
-func (spuo *SellerProductUpdateOne) AddSellerShopProductIDs(ids ...int) *SellerProductUpdateOne {
-	spuo.mutation.AddSellerShopProductIDs(ids...)
-	return spuo
-}
-
-// AddSellerShopProducts adds the "seller_shop_products" edges to the SellerShopProduct entity.
-func (spuo *SellerProductUpdateOne) AddSellerShopProducts(s ...*SellerShopProduct) *SellerProductUpdateOne {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return spuo.AddSellerShopProductIDs(ids...)
-}
-
 // Mutation returns the SellerProductMutation object of the builder.
 func (spuo *SellerProductUpdateOne) Mutation() *SellerProductMutation {
 	return spuo.mutation
@@ -1518,25 +1474,31 @@ func (spuo *SellerProductUpdateOne) RemoveSellerProductImages(s ...*SellerProduc
 	return spuo.RemoveSellerProductImageIDs(ids...)
 }
 
-// ClearSellerProductCategories clears all "seller_product_categories" edges to the SellerProductCategory entity.
-func (spuo *SellerProductUpdateOne) ClearSellerProductCategories() *SellerProductUpdateOne {
-	spuo.mutation.ClearSellerProductCategories()
+// ClearCategories clears all "categories" edges to the Category entity.
+func (spuo *SellerProductUpdateOne) ClearCategories() *SellerProductUpdateOne {
+	spuo.mutation.ClearCategories()
 	return spuo
 }
 
-// RemoveSellerProductCategoryIDs removes the "seller_product_categories" edge to SellerProductCategory entities by IDs.
-func (spuo *SellerProductUpdateOne) RemoveSellerProductCategoryIDs(ids ...int) *SellerProductUpdateOne {
-	spuo.mutation.RemoveSellerProductCategoryIDs(ids...)
+// RemoveCategoryIDs removes the "categories" edge to Category entities by IDs.
+func (spuo *SellerProductUpdateOne) RemoveCategoryIDs(ids ...int) *SellerProductUpdateOne {
+	spuo.mutation.RemoveCategoryIDs(ids...)
 	return spuo
 }
 
-// RemoveSellerProductCategories removes "seller_product_categories" edges to SellerProductCategory entities.
-func (spuo *SellerProductUpdateOne) RemoveSellerProductCategories(s ...*SellerProductCategory) *SellerProductUpdateOne {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// RemoveCategories removes "categories" edges to Category entities.
+func (spuo *SellerProductUpdateOne) RemoveCategories(c ...*Category) *SellerProductUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
 	}
-	return spuo.RemoveSellerProductCategoryIDs(ids...)
+	return spuo.RemoveCategoryIDs(ids...)
+}
+
+// ClearShop clears the "shop" edge to the SellerShop entity.
+func (spuo *SellerProductUpdateOne) ClearShop() *SellerProductUpdateOne {
+	spuo.mutation.ClearShop()
+	return spuo
 }
 
 // ClearCartProducts clears all "cart_products" edges to the CartProduct entity.
@@ -1600,27 +1562,6 @@ func (spuo *SellerProductUpdateOne) RemoveSellerProductVariations(s ...*SellerPr
 		ids[i] = s[i].ID
 	}
 	return spuo.RemoveSellerProductVariationIDs(ids...)
-}
-
-// ClearSellerShopProducts clears all "seller_shop_products" edges to the SellerShopProduct entity.
-func (spuo *SellerProductUpdateOne) ClearSellerShopProducts() *SellerProductUpdateOne {
-	spuo.mutation.ClearSellerShopProducts()
-	return spuo
-}
-
-// RemoveSellerShopProductIDs removes the "seller_shop_products" edge to SellerShopProduct entities by IDs.
-func (spuo *SellerProductUpdateOne) RemoveSellerShopProductIDs(ids ...int) *SellerProductUpdateOne {
-	spuo.mutation.RemoveSellerShopProductIDs(ids...)
-	return spuo
-}
-
-// RemoveSellerShopProducts removes "seller_shop_products" edges to SellerShopProduct entities.
-func (spuo *SellerProductUpdateOne) RemoveSellerShopProducts(s ...*SellerShopProduct) *SellerProductUpdateOne {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return spuo.RemoveSellerShopProductIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -1818,12 +1759,6 @@ func (spuo *SellerProductUpdateOne) sqlSave(ctx context.Context) (_node *SellerP
 			Column: sellerproduct.FieldOfferPrice,
 		})
 	}
-	if spuo.mutation.OfferPriceCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Column: sellerproduct.FieldOfferPrice,
-		})
-	}
 	if value, ok := spuo.mutation.OfferPriceStart(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -1852,14 +1787,14 @@ func (spuo *SellerProductUpdateOne) sqlSave(ctx context.Context) (_node *SellerP
 	}
 	if value, ok := spuo.mutation.NextStock(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
+			Type:   field.TypeTime,
 			Value:  value,
 			Column: sellerproduct.FieldNextStock,
 		})
 	}
 	if spuo.mutation.NextStockCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
+			Type:   field.TypeTime,
 			Column: sellerproduct.FieldNextStock,
 		})
 	}
@@ -2007,33 +1942,33 @@ func (spuo *SellerProductUpdateOne) sqlSave(ctx context.Context) (_node *SellerP
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if spuo.mutation.SellerProductCategoriesCleared() {
+	if spuo.mutation.CategoriesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellerproduct.SellerProductCategoriesTable,
-			Columns: []string{sellerproduct.SellerProductCategoriesColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   sellerproduct.CategoriesTable,
+			Columns: sellerproduct.CategoriesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: sellerproductcategory.FieldID,
+					Column: category.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := spuo.mutation.RemovedSellerProductCategoriesIDs(); len(nodes) > 0 && !spuo.mutation.SellerProductCategoriesCleared() {
+	if nodes := spuo.mutation.RemovedCategoriesIDs(); len(nodes) > 0 && !spuo.mutation.CategoriesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellerproduct.SellerProductCategoriesTable,
-			Columns: []string{sellerproduct.SellerProductCategoriesColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   sellerproduct.CategoriesTable,
+			Columns: sellerproduct.CategoriesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: sellerproductcategory.FieldID,
+					Column: category.FieldID,
 				},
 			},
 		}
@@ -2042,17 +1977,52 @@ func (spuo *SellerProductUpdateOne) sqlSave(ctx context.Context) (_node *SellerP
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := spuo.mutation.SellerProductCategoriesIDs(); len(nodes) > 0 {
+	if nodes := spuo.mutation.CategoriesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellerproduct.SellerProductCategoriesTable,
-			Columns: []string{sellerproduct.SellerProductCategoriesColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   sellerproduct.CategoriesTable,
+			Columns: sellerproduct.CategoriesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: sellerproductcategory.FieldID,
+					Column: category.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if spuo.mutation.ShopCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   sellerproduct.ShopTable,
+			Columns: []string{sellerproduct.ShopColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: sellershop.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := spuo.mutation.ShopIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   sellerproduct.ShopTable,
+			Columns: []string{sellerproduct.ShopColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: sellershop.FieldID,
 				},
 			},
 		}
@@ -2215,60 +2185,6 @@ func (spuo *SellerProductUpdateOne) sqlSave(ctx context.Context) (_node *SellerP
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: sellerproductvariation.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if spuo.mutation.SellerShopProductsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellerproduct.SellerShopProductsTable,
-			Columns: []string{sellerproduct.SellerShopProductsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellershopproduct.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := spuo.mutation.RemovedSellerShopProductsIDs(); len(nodes) > 0 && !spuo.mutation.SellerShopProductsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellerproduct.SellerShopProductsTable,
-			Columns: []string{sellerproduct.SellerShopProductsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellershopproduct.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := spuo.mutation.SellerShopProductsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   sellerproduct.SellerShopProductsTable,
-			Columns: []string{sellerproduct.SellerShopProductsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: sellershopproduct.FieldID,
 				},
 			},
 		}

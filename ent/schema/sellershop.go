@@ -20,11 +20,9 @@ func (SellerShop) Fields() []ent.Field {
 		field.String("slug"),
 		field.String("contact_number").Match(regexp.MustCompile("(^(01)[3-9]\\d{8})$")),
 		field.String("banner"),
-		field.String("shop_category_id"),
-		field.String("shop_category"),
 		field.String("business_location"),
 		field.String("tax_id"),
-		field.Bool("active"),
+		field.Bool("active").Default(false),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),
@@ -40,7 +38,7 @@ func (SellerShop) Edges() []ent.Edge {
 	return []ent.Edge {
 		edge.From("user",User.Type).Ref("seller_shops").Unique(),
 		edge.From("admin",User.Type).Ref("approved_shops").Unique(),
+		edge.From("get_shop_category",ShopCategory.Type).Ref("seller_shops").Unique(),
 		edge.To("seller_products",SellerProduct.Type),
-		edge.To("seller_shop_products",SellerShopProduct.Type),
 	}
 }

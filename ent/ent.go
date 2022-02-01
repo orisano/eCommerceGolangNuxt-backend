@@ -17,7 +17,6 @@ import (
 	"bongo/ent/sellerproductvariationvalues"
 	"bongo/ent/sellerrequest"
 	"bongo/ent/sellershop"
-	"bongo/ent/sellershopproduct"
 	"bongo/ent/shopcategory"
 	"bongo/ent/user"
 	"bongo/ent/userlocation"
@@ -60,7 +59,6 @@ func columnChecker(table string) func(string) error {
 		sellerproductvariationvalues.Table: sellerproductvariationvalues.ValidColumn,
 		sellerrequest.Table:                sellerrequest.ValidColumn,
 		sellershop.Table:                   sellershop.ValidColumn,
-		sellershopproduct.Table:            sellershopproduct.ValidColumn,
 		shopcategory.Table:                 shopcategory.ValidColumn,
 		user.Table:                         user.ValidColumn,
 		userlocation.Table:                 userlocation.ValidColumn,

@@ -3,8 +3,6 @@
 package ent
 
 import (
-	"bongo/ent/category"
-	"bongo/ent/sellerproduct"
 	"bongo/ent/sellerproductcategory"
 	"fmt"
 	"strings"
@@ -23,51 +21,8 @@ type SellerProductCategory struct {
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// DeletedAt holds the value of the "deleted_at" field.
-	DeletedAt *time.Time `json:"deleted_at,omitempty"`
-	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the SellerProductCategoryQuery when eager-loading is set.
-	Edges                                    SellerProductCategoryEdges `json:"edges"`
-	category_product_categories              *int
-	seller_product_seller_product_categories *int
-}
-
-// SellerProductCategoryEdges holds the relations/edges for other nodes in the graph.
-type SellerProductCategoryEdges struct {
-	// SellerProduct holds the value of the seller_product edge.
-	SellerProduct *SellerProduct `json:"seller_product,omitempty"`
-	// Category holds the value of the category edge.
-	Category *Category `json:"category,omitempty"`
-	// loadedTypes holds the information for reporting if a
-	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// SellerProductOrErr returns the SellerProduct value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e SellerProductCategoryEdges) SellerProductOrErr() (*SellerProduct, error) {
-	if e.loadedTypes[0] {
-		if e.SellerProduct == nil {
-			// The edge seller_product was loaded in eager-loading,
-			// but was not found.
-			return nil, &NotFoundError{label: sellerproduct.Label}
-		}
-		return e.SellerProduct, nil
-	}
-	return nil, &NotLoadedError{edge: "seller_product"}
-}
-
-// CategoryOrErr returns the Category value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e SellerProductCategoryEdges) CategoryOrErr() (*Category, error) {
-	if e.loadedTypes[1] {
-		if e.Category == nil {
-			// The edge category was loaded in eager-loading,
-			// but was not found.
-			return nil, &NotFoundError{label: category.Label}
-		}
-		return e.Category, nil
-	}
-	return nil, &NotLoadedError{edge: "category"}
+	DeletedAt                   *time.Time `json:"deleted_at,omitempty"`
+	category_product_categories *int
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -80,8 +35,6 @@ func (*SellerProductCategory) scanValues(columns []string) ([]interface{}, error
 		case sellerproductcategory.FieldCreatedAt, sellerproductcategory.FieldUpdatedAt, sellerproductcategory.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
 		case sellerproductcategory.ForeignKeys[0]: // category_product_categories
-			values[i] = new(sql.NullInt64)
-		case sellerproductcategory.ForeignKeys[1]: // seller_product_seller_product_categories
 			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type SellerProductCategory", columns[i])
@@ -130,26 +83,9 @@ func (spc *SellerProductCategory) assignValues(columns []string, values []interf
 				spc.category_product_categories = new(int)
 				*spc.category_product_categories = int(value.Int64)
 			}
-		case sellerproductcategory.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field seller_product_seller_product_categories", value)
-			} else if value.Valid {
-				spc.seller_product_seller_product_categories = new(int)
-				*spc.seller_product_seller_product_categories = int(value.Int64)
-			}
 		}
 	}
 	return nil
-}
-
-// QuerySellerProduct queries the "seller_product" edge of the SellerProductCategory entity.
-func (spc *SellerProductCategory) QuerySellerProduct() *SellerProductQuery {
-	return (&SellerProductCategoryClient{config: spc.config}).QuerySellerProduct(spc)
-}
-
-// QueryCategory queries the "category" edge of the SellerProductCategory entity.
-func (spc *SellerProductCategory) QueryCategory() *CategoryQuery {
-	return (&SellerProductCategoryClient{config: spc.config}).QueryCategory(spc)
 }
 
 // Update returns a builder for updating this SellerProductCategory.

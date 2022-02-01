@@ -31,9 +31,9 @@ type User struct {
 	// Active holds the value of the "active" field.
 	Active bool `json:"active,omitempty"`
 	// AdminUserName holds the value of the "admin_user_name" field.
-	AdminUserName string `json:"-"`
+	AdminUserName *string `json:"-"`
 	// AdminUserToken holds the value of the "admin_user_token" field.
-	AdminUserToken string `json:"-"`
+	AdminUserToken *string `json:"-"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -231,13 +231,15 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field admin_user_name", values[i])
 			} else if value.Valid {
-				u.AdminUserName = value.String
+				u.AdminUserName = new(string)
+				*u.AdminUserName = value.String
 			}
 		case user.FieldAdminUserToken:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field admin_user_token", values[i])
 			} else if value.Valid {
-				u.AdminUserToken = value.String
+				u.AdminUserToken = new(string)
+				*u.AdminUserToken = value.String
 			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {

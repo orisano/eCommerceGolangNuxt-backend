@@ -170,7 +170,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "quantity", Type: field.TypeInt},
 		{Name: "selling_price", Type: field.TypeFloat64, SchemaType: map[string]string{"mysql": "decimal(6,2)", "postgres": "numeric"}},
-		{Name: "offer_price", Type: field.TypeInt},
+		{Name: "offer_price", Type: field.TypeInt, Default: 0},
 		{Name: "received", Type: field.TypeBool, Default: false},
 		{Name: "status", Type: field.TypeInt, Default: 0},
 		{Name: "created_at", Type: field.TypeTime},
@@ -230,10 +230,10 @@ var (
 		{Name: "quantity", Type: field.TypeInt},
 		{Name: "active", Type: field.TypeBool, Default: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
-		{Name: "offer_price", Type: field.TypeInt, Nullable: true},
+		{Name: "offer_price", Type: field.TypeInt, Default: 0},
 		{Name: "offer_price_start", Type: field.TypeTime, Nullable: true},
 		{Name: "offer_price_end", Type: field.TypeTime, Nullable: true},
-		{Name: "next_stock", Type: field.TypeString, Nullable: true},
+		{Name: "next_stock", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
@@ -274,7 +274,6 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
 		{Name: "category_product_categories", Type: field.TypeInt, Nullable: true},
-		{Name: "seller_product_seller_product_categories", Type: field.TypeInt, Nullable: true},
 	}
 	// SellerProductCategoriesTable holds the schema information for the "seller_product_categories" table.
 	SellerProductCategoriesTable = &schema.Table{
@@ -286,12 +285,6 @@ var (
 				Symbol:     "seller_product_categories_categories_product_categories",
 				Columns:    []*schema.Column{SellerProductCategoriesColumns[4]},
 				RefColumns: []*schema.Column{CategoriesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "seller_product_categories_seller_products_seller_product_categories",
-				Columns:    []*schema.Column{SellerProductCategoriesColumns[5]},
-				RefColumns: []*schema.Column{SellerProductsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -326,7 +319,7 @@ var (
 		{Name: "product_price", Type: field.TypeFloat64, SchemaType: map[string]string{"mysql": "decimal(6,2)", "postgres": "numeric"}},
 		{Name: "selling_price", Type: field.TypeFloat64, SchemaType: map[string]string{"mysql": "decimal(6,2)", "postgres": "numeric"}},
 		{Name: "quantity", Type: field.TypeInt},
-		{Name: "image", Type: field.TypeInt},
+		{Name: "image", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
@@ -419,14 +412,13 @@ var (
 		{Name: "slug", Type: field.TypeString},
 		{Name: "contact_number", Type: field.TypeString},
 		{Name: "banner", Type: field.TypeString},
-		{Name: "shop_category_id", Type: field.TypeString},
-		{Name: "shop_category", Type: field.TypeString},
 		{Name: "business_location", Type: field.TypeString},
 		{Name: "tax_id", Type: field.TypeString},
-		{Name: "active", Type: field.TypeBool},
+		{Name: "active", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "shop_category_seller_shops", Type: field.TypeInt, Nullable: true},
 		{Name: "user_seller_shops", Type: field.TypeInt, Nullable: true},
 		{Name: "user_approved_shops", Type: field.TypeInt, Nullable: true},
 	}
@@ -437,44 +429,21 @@ var (
 		PrimaryKey: []*schema.Column{SellerShopsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
+				Symbol:     "seller_shops_shop_categories_seller_shops",
+				Columns:    []*schema.Column{SellerShopsColumns[11]},
+				RefColumns: []*schema.Column{ShopCategoriesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
 				Symbol:     "seller_shops_users_seller_shops",
-				Columns:    []*schema.Column{SellerShopsColumns[13]},
+				Columns:    []*schema.Column{SellerShopsColumns[12]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "seller_shops_users_approved_shops",
-				Columns:    []*schema.Column{SellerShopsColumns[14]},
+				Columns:    []*schema.Column{SellerShopsColumns[13]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-	}
-	// SellerShopProductsColumns holds the columns for the "seller_shop_products" table.
-	SellerShopProductsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
-		{Name: "seller_product_seller_shop_products", Type: field.TypeInt, Nullable: true},
-		{Name: "seller_shop_seller_shop_products", Type: field.TypeInt, Nullable: true},
-	}
-	// SellerShopProductsTable holds the schema information for the "seller_shop_products" table.
-	SellerShopProductsTable = &schema.Table{
-		Name:       "seller_shop_products",
-		Columns:    SellerShopProductsColumns,
-		PrimaryKey: []*schema.Column{SellerShopProductsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "seller_shop_products_seller_products_seller_shop_products",
-				Columns:    []*schema.Column{SellerShopProductsColumns[4]},
-				RefColumns: []*schema.Column{SellerProductsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "seller_shop_products_seller_shops_seller_shop_products",
-				Columns:    []*schema.Column{SellerShopProductsColumns[5]},
-				RefColumns: []*schema.Column{SellerShopsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -505,8 +474,8 @@ var (
 		{Name: "staff", Type: field.TypeBool, Default: false},
 		{Name: "seller", Type: field.TypeBool, Default: false},
 		{Name: "active", Type: field.TypeBool, Default: false},
-		{Name: "admin_user_name", Type: field.TypeString},
-		{Name: "admin_user_token", Type: field.TypeString},
+		{Name: "admin_user_name", Type: field.TypeString, Nullable: true},
+		{Name: "admin_user_token", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
@@ -546,6 +515,31 @@ var (
 			},
 		},
 	}
+	// CategorySellerProductsColumns holds the columns for the "category_seller_products" table.
+	CategorySellerProductsColumns = []*schema.Column{
+		{Name: "category_id", Type: field.TypeInt},
+		{Name: "seller_product_id", Type: field.TypeInt},
+	}
+	// CategorySellerProductsTable holds the schema information for the "category_seller_products" table.
+	CategorySellerProductsTable = &schema.Table{
+		Name:       "category_seller_products",
+		Columns:    CategorySellerProductsColumns,
+		PrimaryKey: []*schema.Column{CategorySellerProductsColumns[0], CategorySellerProductsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "category_seller_products_category_id",
+				Columns:    []*schema.Column{CategorySellerProductsColumns[0]},
+				RefColumns: []*schema.Column{CategoriesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "category_seller_products_seller_product_id",
+				Columns:    []*schema.Column{CategorySellerProductsColumns[1]},
+				RefColumns: []*schema.Column{SellerProductsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AttributesTable,
@@ -562,10 +556,10 @@ var (
 		SellerProductVariationValuesTable,
 		SellerRequestsTable,
 		SellerShopsTable,
-		SellerShopProductsTable,
 		ShopCategoriesTable,
 		UsersTable,
 		UserLocationsTable,
+		CategorySellerProductsTable,
 	}
 )
 
@@ -588,16 +582,16 @@ func init() {
 	SellerProductsTable.ForeignKeys[1].RefTable = SellerShopsTable
 	SellerProductsTable.ForeignKeys[2].RefTable = UsersTable
 	SellerProductCategoriesTable.ForeignKeys[0].RefTable = CategoriesTable
-	SellerProductCategoriesTable.ForeignKeys[1].RefTable = SellerProductsTable
 	SellerProductImagesTable.ForeignKeys[0].RefTable = SellerProductsTable
 	SellerProductVariationsTable.ForeignKeys[0].RefTable = SellerProductsTable
 	SellerProductVariationValuesTable.ForeignKeys[0].RefTable = AttributesTable
 	SellerProductVariationValuesTable.ForeignKeys[1].RefTable = SellerProductVariationsTable
 	SellerRequestsTable.ForeignKeys[0].RefTable = ShopCategoriesTable
 	SellerRequestsTable.ForeignKeys[1].RefTable = UsersTable
-	SellerShopsTable.ForeignKeys[0].RefTable = UsersTable
+	SellerShopsTable.ForeignKeys[0].RefTable = ShopCategoriesTable
 	SellerShopsTable.ForeignKeys[1].RefTable = UsersTable
-	SellerShopProductsTable.ForeignKeys[0].RefTable = SellerProductsTable
-	SellerShopProductsTable.ForeignKeys[1].RefTable = SellerShopsTable
+	SellerShopsTable.ForeignKeys[2].RefTable = UsersTable
 	UserLocationsTable.ForeignKeys[0].RefTable = UsersTable
+	CategorySellerProductsTable.ForeignKeys[0].RefTable = CategoriesTable
+	CategorySellerProductsTable.ForeignKeys[1].RefTable = SellerProductsTable
 }

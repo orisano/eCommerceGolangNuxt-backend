@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
@@ -353,62 +352,6 @@ func DeletedAtIsNil() predicate.SellerProductCategory {
 func DeletedAtNotNil() predicate.SellerProductCategory {
 	return predicate.SellerProductCategory(func(s *sql.Selector) {
 		s.Where(sql.NotNull(s.C(FieldDeletedAt)))
-	})
-}
-
-// HasSellerProduct applies the HasEdge predicate on the "seller_product" edge.
-func HasSellerProduct() predicate.SellerProductCategory {
-	return predicate.SellerProductCategory(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(SellerProductTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, SellerProductTable, SellerProductColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasSellerProductWith applies the HasEdge predicate on the "seller_product" edge with a given conditions (other predicates).
-func HasSellerProductWith(preds ...predicate.SellerProduct) predicate.SellerProductCategory {
-	return predicate.SellerProductCategory(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(SellerProductInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, SellerProductTable, SellerProductColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasCategory applies the HasEdge predicate on the "category" edge.
-func HasCategory() predicate.SellerProductCategory {
-	return predicate.SellerProductCategory(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(CategoryTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, CategoryTable, CategoryColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasCategoryWith applies the HasEdge predicate on the "category" edge with a given conditions (other predicates).
-func HasCategoryWith(preds ...predicate.Category) predicate.SellerProductCategory {
-	return predicate.SellerProductCategory(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(CategoryInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, CategoryTable, CategoryColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
 	})
 }
 

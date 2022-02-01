@@ -65,6 +65,14 @@ func (cpu *CheckoutProductUpdate) SetOfferPrice(i int) *CheckoutProductUpdate {
 	return cpu
 }
 
+// SetNillableOfferPrice sets the "offer_price" field if the given value is not nil.
+func (cpu *CheckoutProductUpdate) SetNillableOfferPrice(i *int) *CheckoutProductUpdate {
+	if i != nil {
+		cpu.SetOfferPrice(*i)
+	}
+	return cpu
+}
+
 // AddOfferPrice adds i to the "offer_price" field.
 func (cpu *CheckoutProductUpdate) AddOfferPrice(i int) *CheckoutProductUpdate {
 	cpu.mutation.AddOfferPrice(i)
@@ -650,6 +658,14 @@ func (cpuo *CheckoutProductUpdateOne) AddSellingPrice(d decimal.Decimal) *Checko
 func (cpuo *CheckoutProductUpdateOne) SetOfferPrice(i int) *CheckoutProductUpdateOne {
 	cpuo.mutation.ResetOfferPrice()
 	cpuo.mutation.SetOfferPrice(i)
+	return cpuo
+}
+
+// SetNillableOfferPrice sets the "offer_price" field if the given value is not nil.
+func (cpuo *CheckoutProductUpdateOne) SetNillableOfferPrice(i *int) *CheckoutProductUpdateOne {
+	if i != nil {
+		cpuo.SetOfferPrice(*i)
+	}
 	return cpuo
 }
 

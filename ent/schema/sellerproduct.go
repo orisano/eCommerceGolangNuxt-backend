@@ -32,10 +32,10 @@ func (SellerProduct) Fields() []ent.Field {
 		field.Int("quantity"),
 		field.Bool("active").Default(true),
 		field.String("description").Nillable().Optional(),
-		field.Int("offer_price").Nillable().Optional(),
+		field.Int("offer_price").Default(0),
 		field.Time("offer_price_start").Nillable().Optional(),
 		field.Time("offer_price_end").Nillable().Optional(),
-		field.String("next_stock").Nillable().Optional(),
+		field.Time("next_stock").Nillable().Optional(),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),
@@ -48,14 +48,15 @@ func (SellerProduct) Fields() []ent.Field {
 
 // Edges of the SellerProduct.
 func (SellerProduct) Edges() []ent.Edge {
-	return []ent.Edge {
-		edge.From("brand",Brand.Type).Ref("brand").Unique(),
-		edge.From("user",User.Type).Ref("seller_products").Unique(),
-		edge.To("seller_product_images",SellerProductImage.Type),
-		edge.To("seller_product_categories",SellerProductCategory.Type),
-		edge.To("cart_products",CartProduct.Type),
-		edge.To("checkout_products",CheckoutProduct.Type),
-		edge.To("seller_product_variations",SellerProductVariation.Type),
-		edge.To("seller_shop_products",SellerShopProduct.Type),
+	return []ent.Edge{
+		edge.From("brand", Brand.Type).Ref("brand").Unique(),
+		edge.From("user", User.Type).Ref("seller_products").Unique(),
+		edge.To("seller_product_images", SellerProductImage.Type),
+		//edge.To("seller_product_categories",SellerProductCategory.Type),
+		edge.From("categories", Category.Type).Ref("seller_products"),
+		edge.From("shop", SellerShop.Type).Ref("seller_products").Unique(),
+		edge.To("cart_products", CartProduct.Type),
+		edge.To("checkout_products", CheckoutProduct.Type),
+		edge.To("seller_product_variations", SellerProductVariation.Type),
 	}
 }

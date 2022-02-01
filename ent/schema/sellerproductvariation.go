@@ -28,7 +28,7 @@ func (SellerProductVariation) Fields() []ent.Field {
 				dialect.Postgres: "numeric",
 			}),
 		field.Int("quantity"),
-		field.Int("image"),
+		field.String("image"),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),

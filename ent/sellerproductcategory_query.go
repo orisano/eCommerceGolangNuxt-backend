@@ -3,9 +3,7 @@
 package ent
 
 import (
-	"bongo/ent/category"
 	"bongo/ent/predicate"
-	"bongo/ent/sellerproduct"
 	"bongo/ent/sellerproductcategory"
 	"context"
 	"errors"
@@ -26,10 +24,7 @@ type SellerProductCategoryQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.SellerProductCategory
-	// eager-loading edges.
-	withSellerProduct *SellerProductQuery
-	withCategory      *CategoryQuery
-	withFKs           bool
+	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -64,50 +59,6 @@ func (spcq *SellerProductCategoryQuery) Unique(unique bool) *SellerProductCatego
 func (spcq *SellerProductCategoryQuery) Order(o ...OrderFunc) *SellerProductCategoryQuery {
 	spcq.order = append(spcq.order, o...)
 	return spcq
-}
-
-// QuerySellerProduct chains the current query on the "seller_product" edge.
-func (spcq *SellerProductCategoryQuery) QuerySellerProduct() *SellerProductQuery {
-	query := &SellerProductQuery{config: spcq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := spcq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := spcq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(sellerproductcategory.Table, sellerproductcategory.FieldID, selector),
-			sqlgraph.To(sellerproduct.Table, sellerproduct.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, sellerproductcategory.SellerProductTable, sellerproductcategory.SellerProductColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(spcq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryCategory chains the current query on the "category" edge.
-func (spcq *SellerProductCategoryQuery) QueryCategory() *CategoryQuery {
-	query := &CategoryQuery{config: spcq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := spcq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := spcq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(sellerproductcategory.Table, sellerproductcategory.FieldID, selector),
-			sqlgraph.To(category.Table, category.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, sellerproductcategory.CategoryTable, sellerproductcategory.CategoryColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(spcq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // First returns the first SellerProductCategory entity from the query.
@@ -286,39 +237,15 @@ func (spcq *SellerProductCategoryQuery) Clone() *SellerProductCategoryQuery {
 		return nil
 	}
 	return &SellerProductCategoryQuery{
-		config:            spcq.config,
-		limit:             spcq.limit,
-		offset:            spcq.offset,
-		order:             append([]OrderFunc{}, spcq.order...),
-		predicates:        append([]predicate.SellerProductCategory{}, spcq.predicates...),
-		withSellerProduct: spcq.withSellerProduct.Clone(),
-		withCategory:      spcq.withCategory.Clone(),
+		config:     spcq.config,
+		limit:      spcq.limit,
+		offset:     spcq.offset,
+		order:      append([]OrderFunc{}, spcq.order...),
+		predicates: append([]predicate.SellerProductCategory{}, spcq.predicates...),
 		// clone intermediate query.
 		sql:  spcq.sql.Clone(),
 		path: spcq.path,
 	}
-}
-
-// WithSellerProduct tells the query-builder to eager-load the nodes that are connected to
-// the "seller_product" edge. The optional arguments are used to configure the query builder of the edge.
-func (spcq *SellerProductCategoryQuery) WithSellerProduct(opts ...func(*SellerProductQuery)) *SellerProductCategoryQuery {
-	query := &SellerProductQuery{config: spcq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	spcq.withSellerProduct = query
-	return spcq
-}
-
-// WithCategory tells the query-builder to eager-load the nodes that are connected to
-// the "category" edge. The optional arguments are used to configure the query builder of the edge.
-func (spcq *SellerProductCategoryQuery) WithCategory(opts ...func(*CategoryQuery)) *SellerProductCategoryQuery {
-	query := &CategoryQuery{config: spcq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	spcq.withCategory = query
-	return spcq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -384,17 +311,10 @@ func (spcq *SellerProductCategoryQuery) prepareQuery(ctx context.Context) error 
 
 func (spcq *SellerProductCategoryQuery) sqlAll(ctx context.Context) ([]*SellerProductCategory, error) {
 	var (
-		nodes       = []*SellerProductCategory{}
-		withFKs     = spcq.withFKs
-		_spec       = spcq.querySpec()
-		loadedTypes = [2]bool{
-			spcq.withSellerProduct != nil,
-			spcq.withCategory != nil,
-		}
+		nodes   = []*SellerProductCategory{}
+		withFKs = spcq.withFKs
+		_spec   = spcq.querySpec()
 	)
-	if spcq.withSellerProduct != nil || spcq.withCategory != nil {
-		withFKs = true
-	}
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, sellerproductcategory.ForeignKeys...)
 	}
@@ -408,7 +328,6 @@ func (spcq *SellerProductCategoryQuery) sqlAll(ctx context.Context) ([]*SellerPr
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
-		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	if err := sqlgraph.QueryNodes(ctx, spcq.driver, _spec); err != nil {
@@ -417,65 +336,6 @@ func (spcq *SellerProductCategoryQuery) sqlAll(ctx context.Context) ([]*SellerPr
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-
-	if query := spcq.withSellerProduct; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*SellerProductCategory)
-		for i := range nodes {
-			if nodes[i].seller_product_seller_product_categories == nil {
-				continue
-			}
-			fk := *nodes[i].seller_product_seller_product_categories
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(sellerproduct.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "seller_product_seller_product_categories" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.SellerProduct = n
-			}
-		}
-	}
-
-	if query := spcq.withCategory; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*SellerProductCategory)
-		for i := range nodes {
-			if nodes[i].category_product_categories == nil {
-				continue
-			}
-			fk := *nodes[i].category_product_categories
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(category.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "category_product_categories" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.Category = n
-			}
-		}
-	}
-
 	return nodes, nil
 }
 

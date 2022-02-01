@@ -38,7 +38,6 @@ type hooks struct {
 	SellerProductVariationValues []ent.Hook
 	SellerRequest                []ent.Hook
 	SellerShop                   []ent.Hook
-	SellerShopProduct            []ent.Hook
 	ShopCategory                 []ent.Hook
 	User                         []ent.Hook
 	UserLocation                 []ent.Hook

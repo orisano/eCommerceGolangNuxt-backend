@@ -1,9 +1,12 @@
 package myauth
 
 import (
+	"bongo/db"
 	"bongo/mixin"
-	"bongo/model"
+	"context"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"strconv"
 )
 func authMiddleware(c *fiber.Ctx) error {
 	cookie := c.Cookies("bongoauth")
@@ -11,12 +14,14 @@ func authMiddleware(c *fiber.Ctx) error {
 	if !err {
 		c.Status(fiber.StatusForbidden)
 	}
-	var user model.User
-	result := model.DB.First(&user, "id = ?", data.Issuer)
-	if result.Error != nil {
+	fmt.Println("id")
+	id, _ := strconv.Atoi(data.Issuer)
+	_, err2 := db.Client.User.Get(context.Background(),id)
+	if err2 != nil {
 		return c.SendStatus(401)
 	}
-	c.Locals("AuthID", user.ID)
+	c.Locals("AuthID", id)
+	fmt.Println(id)
 	return c.Next()
 }
 func AuthRoutes(app *fiber.App) {

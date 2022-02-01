@@ -48,9 +48,6 @@ type SellerRequest func(*sql.Selector)
 // SellerShop is the predicate function for sellershop builders.
 type SellerShop func(*sql.Selector)
 
-// SellerShopProduct is the predicate function for sellershopproduct builders.
-type SellerShopProduct func(*sql.Selector)
-
 // ShopCategory is the predicate function for shopcategory builders.
 type ShopCategory func(*sql.Selector)
 

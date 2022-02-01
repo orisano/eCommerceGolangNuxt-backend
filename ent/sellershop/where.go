@@ -121,20 +121,6 @@ func Banner(v string) predicate.SellerShop {
 	})
 }
 
-// ShopCategoryID applies equality check predicate on the "shop_category_id" field. It's identical to ShopCategoryIDEQ.
-func ShopCategoryID(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldShopCategoryID), v))
-	})
-}
-
-// ShopCategory applies equality check predicate on the "shop_category" field. It's identical to ShopCategoryEQ.
-func ShopCategory(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldShopCategory), v))
-	})
-}
-
 // BusinessLocation applies equality check predicate on the "business_location" field. It's identical to BusinessLocationEQ.
 func BusinessLocation(v string) predicate.SellerShop {
 	return predicate.SellerShop(func(s *sql.Selector) {
@@ -618,228 +604,6 @@ func BannerEqualFold(v string) predicate.SellerShop {
 func BannerContainsFold(v string) predicate.SellerShop {
 	return predicate.SellerShop(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldBanner), v))
-	})
-}
-
-// ShopCategoryIDEQ applies the EQ predicate on the "shop_category_id" field.
-func ShopCategoryIDEQ(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldShopCategoryID), v))
-	})
-}
-
-// ShopCategoryIDNEQ applies the NEQ predicate on the "shop_category_id" field.
-func ShopCategoryIDNEQ(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldShopCategoryID), v))
-	})
-}
-
-// ShopCategoryIDIn applies the In predicate on the "shop_category_id" field.
-func ShopCategoryIDIn(vs ...string) predicate.SellerShop {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.SellerShop(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.In(s.C(FieldShopCategoryID), v...))
-	})
-}
-
-// ShopCategoryIDNotIn applies the NotIn predicate on the "shop_category_id" field.
-func ShopCategoryIDNotIn(vs ...string) predicate.SellerShop {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.SellerShop(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.NotIn(s.C(FieldShopCategoryID), v...))
-	})
-}
-
-// ShopCategoryIDGT applies the GT predicate on the "shop_category_id" field.
-func ShopCategoryIDGT(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldShopCategoryID), v))
-	})
-}
-
-// ShopCategoryIDGTE applies the GTE predicate on the "shop_category_id" field.
-func ShopCategoryIDGTE(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldShopCategoryID), v))
-	})
-}
-
-// ShopCategoryIDLT applies the LT predicate on the "shop_category_id" field.
-func ShopCategoryIDLT(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldShopCategoryID), v))
-	})
-}
-
-// ShopCategoryIDLTE applies the LTE predicate on the "shop_category_id" field.
-func ShopCategoryIDLTE(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldShopCategoryID), v))
-	})
-}
-
-// ShopCategoryIDContains applies the Contains predicate on the "shop_category_id" field.
-func ShopCategoryIDContains(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldShopCategoryID), v))
-	})
-}
-
-// ShopCategoryIDHasPrefix applies the HasPrefix predicate on the "shop_category_id" field.
-func ShopCategoryIDHasPrefix(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldShopCategoryID), v))
-	})
-}
-
-// ShopCategoryIDHasSuffix applies the HasSuffix predicate on the "shop_category_id" field.
-func ShopCategoryIDHasSuffix(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldShopCategoryID), v))
-	})
-}
-
-// ShopCategoryIDEqualFold applies the EqualFold predicate on the "shop_category_id" field.
-func ShopCategoryIDEqualFold(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldShopCategoryID), v))
-	})
-}
-
-// ShopCategoryIDContainsFold applies the ContainsFold predicate on the "shop_category_id" field.
-func ShopCategoryIDContainsFold(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldShopCategoryID), v))
-	})
-}
-
-// ShopCategoryEQ applies the EQ predicate on the "shop_category" field.
-func ShopCategoryEQ(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldShopCategory), v))
-	})
-}
-
-// ShopCategoryNEQ applies the NEQ predicate on the "shop_category" field.
-func ShopCategoryNEQ(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldShopCategory), v))
-	})
-}
-
-// ShopCategoryIn applies the In predicate on the "shop_category" field.
-func ShopCategoryIn(vs ...string) predicate.SellerShop {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.SellerShop(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.In(s.C(FieldShopCategory), v...))
-	})
-}
-
-// ShopCategoryNotIn applies the NotIn predicate on the "shop_category" field.
-func ShopCategoryNotIn(vs ...string) predicate.SellerShop {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.SellerShop(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.NotIn(s.C(FieldShopCategory), v...))
-	})
-}
-
-// ShopCategoryGT applies the GT predicate on the "shop_category" field.
-func ShopCategoryGT(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldShopCategory), v))
-	})
-}
-
-// ShopCategoryGTE applies the GTE predicate on the "shop_category" field.
-func ShopCategoryGTE(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldShopCategory), v))
-	})
-}
-
-// ShopCategoryLT applies the LT predicate on the "shop_category" field.
-func ShopCategoryLT(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldShopCategory), v))
-	})
-}
-
-// ShopCategoryLTE applies the LTE predicate on the "shop_category" field.
-func ShopCategoryLTE(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldShopCategory), v))
-	})
-}
-
-// ShopCategoryContains applies the Contains predicate on the "shop_category" field.
-func ShopCategoryContains(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldShopCategory), v))
-	})
-}
-
-// ShopCategoryHasPrefix applies the HasPrefix predicate on the "shop_category" field.
-func ShopCategoryHasPrefix(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldShopCategory), v))
-	})
-}
-
-// ShopCategoryHasSuffix applies the HasSuffix predicate on the "shop_category" field.
-func ShopCategoryHasSuffix(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldShopCategory), v))
-	})
-}
-
-// ShopCategoryEqualFold applies the EqualFold predicate on the "shop_category" field.
-func ShopCategoryEqualFold(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldShopCategory), v))
-	})
-}
-
-// ShopCategoryContainsFold applies the ContainsFold predicate on the "shop_category" field.
-func ShopCategoryContainsFold(v string) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldShopCategory), v))
 	})
 }
 
@@ -1377,6 +1141,34 @@ func HasAdminWith(preds ...predicate.User) predicate.SellerShop {
 	})
 }
 
+// HasGetShopCategory applies the HasEdge predicate on the "get_shop_category" edge.
+func HasGetShopCategory() predicate.SellerShop {
+	return predicate.SellerShop(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(GetShopCategoryTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, GetShopCategoryTable, GetShopCategoryColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGetShopCategoryWith applies the HasEdge predicate on the "get_shop_category" edge with a given conditions (other predicates).
+func HasGetShopCategoryWith(preds ...predicate.ShopCategory) predicate.SellerShop {
+	return predicate.SellerShop(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(GetShopCategoryInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, GetShopCategoryTable, GetShopCategoryColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasSellerProducts applies the HasEdge predicate on the "seller_products" edge.
 func HasSellerProducts() predicate.SellerShop {
 	return predicate.SellerShop(func(s *sql.Selector) {
@@ -1396,34 +1188,6 @@ func HasSellerProductsWith(preds ...predicate.SellerProduct) predicate.SellerSho
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(SellerProductsInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, SellerProductsTable, SellerProductsColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasSellerShopProducts applies the HasEdge predicate on the "seller_shop_products" edge.
-func HasSellerShopProducts() predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(SellerShopProductsTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, SellerShopProductsTable, SellerShopProductsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasSellerShopProductsWith applies the HasEdge predicate on the "seller_shop_products" edge with a given conditions (other predicates).
-func HasSellerShopProductsWith(preds ...predicate.SellerShopProduct) predicate.SellerShop {
-	return predicate.SellerShop(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(SellerShopProductsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, SellerShopProductsTable, SellerShopProductsColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

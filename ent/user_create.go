@@ -107,9 +107,25 @@ func (uc *UserCreate) SetAdminUserName(s string) *UserCreate {
 	return uc
 }
 
+// SetNillableAdminUserName sets the "admin_user_name" field if the given value is not nil.
+func (uc *UserCreate) SetNillableAdminUserName(s *string) *UserCreate {
+	if s != nil {
+		uc.SetAdminUserName(*s)
+	}
+	return uc
+}
+
 // SetAdminUserToken sets the "admin_user_token" field.
 func (uc *UserCreate) SetAdminUserToken(s string) *UserCreate {
 	uc.mutation.SetAdminUserToken(s)
+	return uc
+}
+
+// SetNillableAdminUserToken sets the "admin_user_token" field if the given value is not nil.
+func (uc *UserCreate) SetNillableAdminUserToken(s *string) *UserCreate {
+	if s != nil {
+		uc.SetAdminUserToken(*s)
+	}
 	return uc
 }
 
@@ -415,12 +431,6 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Active(); !ok {
 		return &ValidationError{Name: "active", err: errors.New(`ent: missing required field "active"`)}
 	}
-	if _, ok := uc.mutation.AdminUserName(); !ok {
-		return &ValidationError{Name: "admin_user_name", err: errors.New(`ent: missing required field "admin_user_name"`)}
-	}
-	if _, ok := uc.mutation.AdminUserToken(); !ok {
-		return &ValidationError{Name: "admin_user_token", err: errors.New(`ent: missing required field "admin_user_token"`)}
-	}
 	if _, ok := uc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
 	}
@@ -516,7 +526,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: user.FieldAdminUserName,
 		})
-		_node.AdminUserName = value
+		_node.AdminUserName = &value
 	}
 	if value, ok := uc.mutation.AdminUserToken(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -524,7 +534,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: user.FieldAdminUserToken,
 		})
-		_node.AdminUserToken = value
+		_node.AdminUserToken = &value
 	}
 	if value, ok := uc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

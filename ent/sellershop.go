@@ -4,6 +4,7 @@ package ent
 
 import (
 	"bongo/ent/sellershop"
+	"bongo/ent/shopcategory"
 	"bongo/ent/user"
 	"fmt"
 	"strings"
@@ -25,10 +26,6 @@ type SellerShop struct {
 	ContactNumber string `json:"contact_number,omitempty"`
 	// Banner holds the value of the "banner" field.
 	Banner string `json:"banner,omitempty"`
-	// ShopCategoryID holds the value of the "shop_category_id" field.
-	ShopCategoryID string `json:"shop_category_id,omitempty"`
-	// ShopCategory holds the value of the "shop_category" field.
-	ShopCategory string `json:"shop_category,omitempty"`
 	// BusinessLocation holds the value of the "business_location" field.
 	BusinessLocation string `json:"business_location,omitempty"`
 	// TaxID holds the value of the "tax_id" field.
@@ -43,9 +40,10 @@ type SellerShop struct {
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SellerShopQuery when eager-loading is set.
-	Edges               SellerShopEdges `json:"edges"`
-	user_seller_shops   *int
-	user_approved_shops *int
+	Edges                      SellerShopEdges `json:"edges"`
+	shop_category_seller_shops *int
+	user_seller_shops          *int
+	user_approved_shops        *int
 }
 
 // SellerShopEdges holds the relations/edges for other nodes in the graph.
@@ -54,10 +52,10 @@ type SellerShopEdges struct {
 	User *User `json:"user,omitempty"`
 	// Admin holds the value of the admin edge.
 	Admin *User `json:"admin,omitempty"`
+	// GetShopCategory holds the value of the get_shop_category edge.
+	GetShopCategory *ShopCategory `json:"get_shop_category,omitempty"`
 	// SellerProducts holds the value of the seller_products edge.
 	SellerProducts []*SellerProduct `json:"seller_products,omitempty"`
-	// SellerShopProducts holds the value of the seller_shop_products edge.
-	SellerShopProducts []*SellerShopProduct `json:"seller_shop_products,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
@@ -91,22 +89,27 @@ func (e SellerShopEdges) AdminOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "admin"}
 }
 
+// GetShopCategoryOrErr returns the GetShopCategory value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SellerShopEdges) GetShopCategoryOrErr() (*ShopCategory, error) {
+	if e.loadedTypes[2] {
+		if e.GetShopCategory == nil {
+			// The edge get_shop_category was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: shopcategory.Label}
+		}
+		return e.GetShopCategory, nil
+	}
+	return nil, &NotLoadedError{edge: "get_shop_category"}
+}
+
 // SellerProductsOrErr returns the SellerProducts value or an error if the edge
 // was not loaded in eager-loading.
 func (e SellerShopEdges) SellerProductsOrErr() ([]*SellerProduct, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.SellerProducts, nil
 	}
 	return nil, &NotLoadedError{edge: "seller_products"}
-}
-
-// SellerShopProductsOrErr returns the SellerShopProducts value or an error if the edge
-// was not loaded in eager-loading.
-func (e SellerShopEdges) SellerShopProductsOrErr() ([]*SellerShopProduct, error) {
-	if e.loadedTypes[3] {
-		return e.SellerShopProducts, nil
-	}
-	return nil, &NotLoadedError{edge: "seller_shop_products"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -118,13 +121,15 @@ func (*SellerShop) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullBool)
 		case sellershop.FieldID:
 			values[i] = new(sql.NullInt64)
-		case sellershop.FieldName, sellershop.FieldSlug, sellershop.FieldContactNumber, sellershop.FieldBanner, sellershop.FieldShopCategoryID, sellershop.FieldShopCategory, sellershop.FieldBusinessLocation, sellershop.FieldTaxID:
+		case sellershop.FieldName, sellershop.FieldSlug, sellershop.FieldContactNumber, sellershop.FieldBanner, sellershop.FieldBusinessLocation, sellershop.FieldTaxID:
 			values[i] = new(sql.NullString)
 		case sellershop.FieldCreatedAt, sellershop.FieldUpdatedAt, sellershop.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
-		case sellershop.ForeignKeys[0]: // user_seller_shops
+		case sellershop.ForeignKeys[0]: // shop_category_seller_shops
 			values[i] = new(sql.NullInt64)
-		case sellershop.ForeignKeys[1]: // user_approved_shops
+		case sellershop.ForeignKeys[1]: // user_seller_shops
+			values[i] = new(sql.NullInt64)
+		case sellershop.ForeignKeys[2]: // user_approved_shops
 			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type SellerShop", columns[i])
@@ -171,18 +176,6 @@ func (ss *SellerShop) assignValues(columns []string, values []interface{}) error
 			} else if value.Valid {
 				ss.Banner = value.String
 			}
-		case sellershop.FieldShopCategoryID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field shop_category_id", values[i])
-			} else if value.Valid {
-				ss.ShopCategoryID = value.String
-			}
-		case sellershop.FieldShopCategory:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field shop_category", values[i])
-			} else if value.Valid {
-				ss.ShopCategory = value.String
-			}
 		case sellershop.FieldBusinessLocation:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field business_location", values[i])
@@ -222,12 +215,19 @@ func (ss *SellerShop) assignValues(columns []string, values []interface{}) error
 			}
 		case sellershop.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field shop_category_seller_shops", value)
+			} else if value.Valid {
+				ss.shop_category_seller_shops = new(int)
+				*ss.shop_category_seller_shops = int(value.Int64)
+			}
+		case sellershop.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field user_seller_shops", value)
 			} else if value.Valid {
 				ss.user_seller_shops = new(int)
 				*ss.user_seller_shops = int(value.Int64)
 			}
-		case sellershop.ForeignKeys[1]:
+		case sellershop.ForeignKeys[2]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field user_approved_shops", value)
 			} else if value.Valid {
@@ -249,14 +249,14 @@ func (ss *SellerShop) QueryAdmin() *UserQuery {
 	return (&SellerShopClient{config: ss.config}).QueryAdmin(ss)
 }
 
+// QueryGetShopCategory queries the "get_shop_category" edge of the SellerShop entity.
+func (ss *SellerShop) QueryGetShopCategory() *ShopCategoryQuery {
+	return (&SellerShopClient{config: ss.config}).QueryGetShopCategory(ss)
+}
+
 // QuerySellerProducts queries the "seller_products" edge of the SellerShop entity.
 func (ss *SellerShop) QuerySellerProducts() *SellerProductQuery {
 	return (&SellerShopClient{config: ss.config}).QuerySellerProducts(ss)
-}
-
-// QuerySellerShopProducts queries the "seller_shop_products" edge of the SellerShop entity.
-func (ss *SellerShop) QuerySellerShopProducts() *SellerShopProductQuery {
-	return (&SellerShopClient{config: ss.config}).QuerySellerShopProducts(ss)
 }
 
 // Update returns a builder for updating this SellerShop.
@@ -290,10 +290,6 @@ func (ss *SellerShop) String() string {
 	builder.WriteString(ss.ContactNumber)
 	builder.WriteString(", banner=")
 	builder.WriteString(ss.Banner)
-	builder.WriteString(", shop_category_id=")
-	builder.WriteString(ss.ShopCategoryID)
-	builder.WriteString(", shop_category=")
-	builder.WriteString(ss.ShopCategory)
 	builder.WriteString(", business_location=")
 	builder.WriteString(ss.BusinessLocation)
 	builder.WriteString(", tax_id=")

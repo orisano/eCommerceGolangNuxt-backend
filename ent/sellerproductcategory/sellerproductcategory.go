@@ -17,26 +17,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldDeletedAt holds the string denoting the deleted_at field in the database.
 	FieldDeletedAt = "deleted_at"
-	// EdgeSellerProduct holds the string denoting the seller_product edge name in mutations.
-	EdgeSellerProduct = "seller_product"
-	// EdgeCategory holds the string denoting the category edge name in mutations.
-	EdgeCategory = "category"
 	// Table holds the table name of the sellerproductcategory in the database.
 	Table = "seller_product_categories"
-	// SellerProductTable is the table that holds the seller_product relation/edge.
-	SellerProductTable = "seller_product_categories"
-	// SellerProductInverseTable is the table name for the SellerProduct entity.
-	// It exists in this package in order to avoid circular dependency with the "sellerproduct" package.
-	SellerProductInverseTable = "seller_products"
-	// SellerProductColumn is the table column denoting the seller_product relation/edge.
-	SellerProductColumn = "seller_product_seller_product_categories"
-	// CategoryTable is the table that holds the category relation/edge.
-	CategoryTable = "seller_product_categories"
-	// CategoryInverseTable is the table name for the Category entity.
-	// It exists in this package in order to avoid circular dependency with the "category" package.
-	CategoryInverseTable = "categories"
-	// CategoryColumn is the table column denoting the category relation/edge.
-	CategoryColumn = "category_product_categories"
 )
 
 // Columns holds all SQL columns for sellerproductcategory fields.
@@ -51,7 +33,6 @@ var Columns = []string{
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"category_product_categories",
-	"seller_product_seller_product_categories",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

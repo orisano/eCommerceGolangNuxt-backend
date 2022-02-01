@@ -33,5 +33,6 @@ func (ShopCategory) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("categories", Category.Type),
 		edge.To("seller_requests", SellerRequest.Type),
+		edge.To("seller_shops", SellerShop.Type),
 	}
 }

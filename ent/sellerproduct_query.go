@@ -5,13 +5,13 @@ package ent
 import (
 	"bongo/ent/brand"
 	"bongo/ent/cartproduct"
+	"bongo/ent/category"
 	"bongo/ent/checkoutproduct"
 	"bongo/ent/predicate"
 	"bongo/ent/sellerproduct"
-	"bongo/ent/sellerproductcategory"
 	"bongo/ent/sellerproductimage"
 	"bongo/ent/sellerproductvariation"
-	"bongo/ent/sellershopproduct"
+	"bongo/ent/sellershop"
 	"bongo/ent/user"
 	"context"
 	"database/sql/driver"
@@ -37,11 +37,11 @@ type SellerProductQuery struct {
 	withBrand                   *BrandQuery
 	withUser                    *UserQuery
 	withSellerProductImages     *SellerProductImageQuery
-	withSellerProductCategories *SellerProductCategoryQuery
+	withCategories              *CategoryQuery
+	withShop                    *SellerShopQuery
 	withCartProducts            *CartProductQuery
 	withCheckoutProducts        *CheckoutProductQuery
 	withSellerProductVariations *SellerProductVariationQuery
-	withSellerShopProducts      *SellerShopProductQuery
 	withFKs                     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -145,9 +145,9 @@ func (spq *SellerProductQuery) QuerySellerProductImages() *SellerProductImageQue
 	return query
 }
 
-// QuerySellerProductCategories chains the current query on the "seller_product_categories" edge.
-func (spq *SellerProductQuery) QuerySellerProductCategories() *SellerProductCategoryQuery {
-	query := &SellerProductCategoryQuery{config: spq.config}
+// QueryCategories chains the current query on the "categories" edge.
+func (spq *SellerProductQuery) QueryCategories() *CategoryQuery {
+	query := &CategoryQuery{config: spq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := spq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -158,8 +158,30 @@ func (spq *SellerProductQuery) QuerySellerProductCategories() *SellerProductCate
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(sellerproduct.Table, sellerproduct.FieldID, selector),
-			sqlgraph.To(sellerproductcategory.Table, sellerproductcategory.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, sellerproduct.SellerProductCategoriesTable, sellerproduct.SellerProductCategoriesColumn),
+			sqlgraph.To(category.Table, category.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, sellerproduct.CategoriesTable, sellerproduct.CategoriesPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(spq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryShop chains the current query on the "shop" edge.
+func (spq *SellerProductQuery) QueryShop() *SellerShopQuery {
+	query := &SellerShopQuery{config: spq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := spq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := spq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(sellerproduct.Table, sellerproduct.FieldID, selector),
+			sqlgraph.To(sellershop.Table, sellershop.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, sellerproduct.ShopTable, sellerproduct.ShopColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(spq.driver.Dialect(), step)
 		return fromU, nil
@@ -226,28 +248,6 @@ func (spq *SellerProductQuery) QuerySellerProductVariations() *SellerProductVari
 			sqlgraph.From(sellerproduct.Table, sellerproduct.FieldID, selector),
 			sqlgraph.To(sellerproductvariation.Table, sellerproductvariation.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, sellerproduct.SellerProductVariationsTable, sellerproduct.SellerProductVariationsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(spq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QuerySellerShopProducts chains the current query on the "seller_shop_products" edge.
-func (spq *SellerProductQuery) QuerySellerShopProducts() *SellerShopProductQuery {
-	query := &SellerShopProductQuery{config: spq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := spq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := spq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(sellerproduct.Table, sellerproduct.FieldID, selector),
-			sqlgraph.To(sellershopproduct.Table, sellershopproduct.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, sellerproduct.SellerShopProductsTable, sellerproduct.SellerShopProductsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(spq.driver.Dialect(), step)
 		return fromU, nil
@@ -439,11 +439,11 @@ func (spq *SellerProductQuery) Clone() *SellerProductQuery {
 		withBrand:                   spq.withBrand.Clone(),
 		withUser:                    spq.withUser.Clone(),
 		withSellerProductImages:     spq.withSellerProductImages.Clone(),
-		withSellerProductCategories: spq.withSellerProductCategories.Clone(),
+		withCategories:              spq.withCategories.Clone(),
+		withShop:                    spq.withShop.Clone(),
 		withCartProducts:            spq.withCartProducts.Clone(),
 		withCheckoutProducts:        spq.withCheckoutProducts.Clone(),
 		withSellerProductVariations: spq.withSellerProductVariations.Clone(),
-		withSellerShopProducts:      spq.withSellerShopProducts.Clone(),
 		// clone intermediate query.
 		sql:  spq.sql.Clone(),
 		path: spq.path,
@@ -483,14 +483,25 @@ func (spq *SellerProductQuery) WithSellerProductImages(opts ...func(*SellerProdu
 	return spq
 }
 
-// WithSellerProductCategories tells the query-builder to eager-load the nodes that are connected to
-// the "seller_product_categories" edge. The optional arguments are used to configure the query builder of the edge.
-func (spq *SellerProductQuery) WithSellerProductCategories(opts ...func(*SellerProductCategoryQuery)) *SellerProductQuery {
-	query := &SellerProductCategoryQuery{config: spq.config}
+// WithCategories tells the query-builder to eager-load the nodes that are connected to
+// the "categories" edge. The optional arguments are used to configure the query builder of the edge.
+func (spq *SellerProductQuery) WithCategories(opts ...func(*CategoryQuery)) *SellerProductQuery {
+	query := &CategoryQuery{config: spq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	spq.withSellerProductCategories = query
+	spq.withCategories = query
+	return spq
+}
+
+// WithShop tells the query-builder to eager-load the nodes that are connected to
+// the "shop" edge. The optional arguments are used to configure the query builder of the edge.
+func (spq *SellerProductQuery) WithShop(opts ...func(*SellerShopQuery)) *SellerProductQuery {
+	query := &SellerShopQuery{config: spq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	spq.withShop = query
 	return spq
 }
 
@@ -524,17 +535,6 @@ func (spq *SellerProductQuery) WithSellerProductVariations(opts ...func(*SellerP
 		opt(query)
 	}
 	spq.withSellerProductVariations = query
-	return spq
-}
-
-// WithSellerShopProducts tells the query-builder to eager-load the nodes that are connected to
-// the "seller_shop_products" edge. The optional arguments are used to configure the query builder of the edge.
-func (spq *SellerProductQuery) WithSellerShopProducts(opts ...func(*SellerShopProductQuery)) *SellerProductQuery {
-	query := &SellerShopProductQuery{config: spq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	spq.withSellerShopProducts = query
 	return spq
 }
 
@@ -608,14 +608,14 @@ func (spq *SellerProductQuery) sqlAll(ctx context.Context) ([]*SellerProduct, er
 			spq.withBrand != nil,
 			spq.withUser != nil,
 			spq.withSellerProductImages != nil,
-			spq.withSellerProductCategories != nil,
+			spq.withCategories != nil,
+			spq.withShop != nil,
 			spq.withCartProducts != nil,
 			spq.withCheckoutProducts != nil,
 			spq.withSellerProductVariations != nil,
-			spq.withSellerShopProducts != nil,
 		}
 	)
-	if spq.withBrand != nil || spq.withUser != nil {
+	if spq.withBrand != nil || spq.withUser != nil || spq.withShop != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -728,32 +728,97 @@ func (spq *SellerProductQuery) sqlAll(ctx context.Context) ([]*SellerProduct, er
 		}
 	}
 
-	if query := spq.withSellerProductCategories; query != nil {
+	if query := spq.withCategories; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*SellerProduct)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.SellerProductCategories = []*SellerProductCategory{}
+		ids := make(map[int]*SellerProduct, len(nodes))
+		for _, node := range nodes {
+			ids[node.ID] = node
+			fks = append(fks, node.ID)
+			node.Edges.Categories = []*Category{}
 		}
-		query.withFKs = true
-		query.Where(predicate.SellerProductCategory(func(s *sql.Selector) {
-			s.Where(sql.InValues(sellerproduct.SellerProductCategoriesColumn, fks...))
-		}))
+		var (
+			edgeids []int
+			edges   = make(map[int][]*SellerProduct)
+		)
+		_spec := &sqlgraph.EdgeQuerySpec{
+			Edge: &sqlgraph.EdgeSpec{
+				Inverse: true,
+				Table:   sellerproduct.CategoriesTable,
+				Columns: sellerproduct.CategoriesPrimaryKey,
+			},
+			Predicate: func(s *sql.Selector) {
+				s.Where(sql.InValues(sellerproduct.CategoriesPrimaryKey[1], fks...))
+			},
+			ScanValues: func() [2]interface{} {
+				return [2]interface{}{new(sql.NullInt64), new(sql.NullInt64)}
+			},
+			Assign: func(out, in interface{}) error {
+				eout, ok := out.(*sql.NullInt64)
+				if !ok || eout == nil {
+					return fmt.Errorf("unexpected id value for edge-out")
+				}
+				ein, ok := in.(*sql.NullInt64)
+				if !ok || ein == nil {
+					return fmt.Errorf("unexpected id value for edge-in")
+				}
+				outValue := int(eout.Int64)
+				inValue := int(ein.Int64)
+				node, ok := ids[outValue]
+				if !ok {
+					return fmt.Errorf("unexpected node id in edges: %v", outValue)
+				}
+				if _, ok := edges[inValue]; !ok {
+					edgeids = append(edgeids, inValue)
+				}
+				edges[inValue] = append(edges[inValue], node)
+				return nil
+			},
+		}
+		if err := sqlgraph.QueryEdges(ctx, spq.driver, _spec); err != nil {
+			return nil, fmt.Errorf(`query edges "categories": %w`, err)
+		}
+		query.Where(category.IDIn(edgeids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.seller_product_seller_product_categories
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "seller_product_seller_product_categories" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := edges[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "seller_product_seller_product_categories" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected "categories" node returned %v`, n.ID)
 			}
-			node.Edges.SellerProductCategories = append(node.Edges.SellerProductCategories, n)
+			for i := range nodes {
+				nodes[i].Edges.Categories = append(nodes[i].Edges.Categories, n)
+			}
+		}
+	}
+
+	if query := spq.withShop; query != nil {
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*SellerProduct)
+		for i := range nodes {
+			if nodes[i].seller_shop_seller_products == nil {
+				continue
+			}
+			fk := *nodes[i].seller_shop_seller_products
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
+		}
+		query.Where(sellershop.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "seller_shop_seller_products" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.Shop = n
+			}
 		}
 	}
 
@@ -841,35 +906,6 @@ func (spq *SellerProductQuery) sqlAll(ctx context.Context) ([]*SellerProduct, er
 				return nil, fmt.Errorf(`unexpected foreign-key "seller_product_seller_product_variations" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.SellerProductVariations = append(node.Edges.SellerProductVariations, n)
-		}
-	}
-
-	if query := spq.withSellerShopProducts; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*SellerProduct)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.SellerShopProducts = []*SellerShopProduct{}
-		}
-		query.withFKs = true
-		query.Where(predicate.SellerShopProduct(func(s *sql.Selector) {
-			s.Where(sql.InValues(sellerproduct.SellerShopProductsColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.seller_product_seller_shop_products
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "seller_product_seller_shop_products" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "seller_product_seller_shop_products" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.SellerShopProducts = append(node.Edges.SellerShopProducts, n)
 		}
 	}
 

@@ -27,6 +27,8 @@ const (
 	EdgeCategories = "categories"
 	// EdgeSellerRequests holds the string denoting the seller_requests edge name in mutations.
 	EdgeSellerRequests = "seller_requests"
+	// EdgeSellerShops holds the string denoting the seller_shops edge name in mutations.
+	EdgeSellerShops = "seller_shops"
 	// Table holds the table name of the shopcategory in the database.
 	Table = "shop_categories"
 	// CategoriesTable is the table that holds the categories relation/edge.
@@ -43,6 +45,13 @@ const (
 	SellerRequestsInverseTable = "seller_requests"
 	// SellerRequestsColumn is the table column denoting the seller_requests relation/edge.
 	SellerRequestsColumn = "shop_category_seller_requests"
+	// SellerShopsTable is the table that holds the seller_shops relation/edge.
+	SellerShopsTable = "seller_shops"
+	// SellerShopsInverseTable is the table name for the SellerShop entity.
+	// It exists in this package in order to avoid circular dependency with the "sellershop" package.
+	SellerShopsInverseTable = "seller_shops"
+	// SellerShopsColumn is the table column denoting the seller_shops relation/edge.
+	SellerShopsColumn = "shop_category_seller_shops"
 )
 
 // Columns holds all SQL columns for shopcategory fields.

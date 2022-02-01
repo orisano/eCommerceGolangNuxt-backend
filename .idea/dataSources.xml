@@ -15,5 +15,12 @@
       <jdbc-url>jdbc:postgresql://localhost:5432/bongo_ent</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="bongobitan.db" uuid="09850f07-ea0d-4b87-9c81-cc4d9f1383a6">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:E:\bongoBitan\bongoGO\bongobitan.db</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

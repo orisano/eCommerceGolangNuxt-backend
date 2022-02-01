@@ -1,9 +1,11 @@
 package myadmin
 
 import (
+	"bongo/db"
 	"bongo/mixin"
-	"bongo/model"
+	"context"
 	"github.com/gofiber/fiber/v2"
+	"strconv"
 )
 
 func adminMiddleware(c *fiber.Ctx) error {
@@ -12,16 +14,20 @@ func adminMiddleware(c *fiber.Ctx) error {
 	if !err {
 		c.Status(fiber.StatusForbidden)
 	}
-
-	var user model.User
-	result := model.DB.First(&user, "id = ?", data.Issuer)
-	if result.Error != nil {
-		return c.SendStatus(401)
+	id, _ := strconv.Atoi(data.Issuer)
+	user, err2 := db.Client.User.Get(context.Background(),id)
+	if err2 != nil {
+		return c.Status(401).SendString("You are not allowed.")
 	}
+	//var user model.User
+	//result := model.DB.First(&user, "id = ?", data.Issuer)
+	//if result.Error != nil {
+	//	return c.SendStatus(401)
+	//}
 	if !user.Admin {
-		return c.SendStatus(401)
+		return c.Status(401).SendString("You are not allowed.")
 	}
-	c.Locals("AuthID", user.ID)
+	c.Locals("AuthID", id)
 	return c.Next()
 }
 func AdminRoutes(app *fiber.App) {

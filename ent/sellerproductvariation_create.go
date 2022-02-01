@@ -44,8 +44,8 @@ func (spvc *SellerProductVariationCreate) SetQuantity(i int) *SellerProductVaria
 }
 
 // SetImage sets the "image" field.
-func (spvc *SellerProductVariationCreate) SetImage(i int) *SellerProductVariationCreate {
-	spvc.mutation.SetImage(i)
+func (spvc *SellerProductVariationCreate) SetImage(s string) *SellerProductVariationCreate {
+	spvc.mutation.SetImage(s)
 	return spvc
 }
 
@@ -309,7 +309,7 @@ func (spvc *SellerProductVariationCreate) createSpec() (*SellerProductVariation,
 	}
 	if value, ok := spvc.mutation.Image(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeString,
 			Value:  value,
 			Column: sellerproductvariation.FieldImage,
 		})

@@ -19,10 +19,6 @@ const (
 	FieldContactNumber = "contact_number"
 	// FieldBanner holds the string denoting the banner field in the database.
 	FieldBanner = "banner"
-	// FieldShopCategoryID holds the string denoting the shop_category_id field in the database.
-	FieldShopCategoryID = "shop_category_id"
-	// FieldShopCategory holds the string denoting the shop_category field in the database.
-	FieldShopCategory = "shop_category"
 	// FieldBusinessLocation holds the string denoting the business_location field in the database.
 	FieldBusinessLocation = "business_location"
 	// FieldTaxID holds the string denoting the tax_id field in the database.
@@ -39,10 +35,10 @@ const (
 	EdgeUser = "user"
 	// EdgeAdmin holds the string denoting the admin edge name in mutations.
 	EdgeAdmin = "admin"
+	// EdgeGetShopCategory holds the string denoting the get_shop_category edge name in mutations.
+	EdgeGetShopCategory = "get_shop_category"
 	// EdgeSellerProducts holds the string denoting the seller_products edge name in mutations.
 	EdgeSellerProducts = "seller_products"
-	// EdgeSellerShopProducts holds the string denoting the seller_shop_products edge name in mutations.
-	EdgeSellerShopProducts = "seller_shop_products"
 	// Table holds the table name of the sellershop in the database.
 	Table = "seller_shops"
 	// UserTable is the table that holds the user relation/edge.
@@ -59,6 +55,13 @@ const (
 	AdminInverseTable = "users"
 	// AdminColumn is the table column denoting the admin relation/edge.
 	AdminColumn = "user_approved_shops"
+	// GetShopCategoryTable is the table that holds the get_shop_category relation/edge.
+	GetShopCategoryTable = "seller_shops"
+	// GetShopCategoryInverseTable is the table name for the ShopCategory entity.
+	// It exists in this package in order to avoid circular dependency with the "shopcategory" package.
+	GetShopCategoryInverseTable = "shop_categories"
+	// GetShopCategoryColumn is the table column denoting the get_shop_category relation/edge.
+	GetShopCategoryColumn = "shop_category_seller_shops"
 	// SellerProductsTable is the table that holds the seller_products relation/edge.
 	SellerProductsTable = "seller_products"
 	// SellerProductsInverseTable is the table name for the SellerProduct entity.
@@ -66,13 +69,6 @@ const (
 	SellerProductsInverseTable = "seller_products"
 	// SellerProductsColumn is the table column denoting the seller_products relation/edge.
 	SellerProductsColumn = "seller_shop_seller_products"
-	// SellerShopProductsTable is the table that holds the seller_shop_products relation/edge.
-	SellerShopProductsTable = "seller_shop_products"
-	// SellerShopProductsInverseTable is the table name for the SellerShopProduct entity.
-	// It exists in this package in order to avoid circular dependency with the "sellershopproduct" package.
-	SellerShopProductsInverseTable = "seller_shop_products"
-	// SellerShopProductsColumn is the table column denoting the seller_shop_products relation/edge.
-	SellerShopProductsColumn = "seller_shop_seller_shop_products"
 )
 
 // Columns holds all SQL columns for sellershop fields.
@@ -82,8 +78,6 @@ var Columns = []string{
 	FieldSlug,
 	FieldContactNumber,
 	FieldBanner,
-	FieldShopCategoryID,
-	FieldShopCategory,
 	FieldBusinessLocation,
 	FieldTaxID,
 	FieldActive,
@@ -95,6 +89,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "seller_shops"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
+	"shop_category_seller_shops",
 	"user_seller_shops",
 	"user_approved_shops",
 }
@@ -117,6 +112,8 @@ func ValidColumn(column string) bool {
 var (
 	// ContactNumberValidator is a validator for the "contact_number" field. It is called by the builders before save.
 	ContactNumberValidator func(string) error
+	// DefaultActive holds the default value on creation for the "active" field.
+	DefaultActive bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.

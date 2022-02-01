@@ -43,6 +43,14 @@ func (cpc *CheckoutProductCreate) SetOfferPrice(i int) *CheckoutProductCreate {
 	return cpc
 }
 
+// SetNillableOfferPrice sets the "offer_price" field if the given value is not nil.
+func (cpc *CheckoutProductCreate) SetNillableOfferPrice(i *int) *CheckoutProductCreate {
+	if i != nil {
+		cpc.SetOfferPrice(*i)
+	}
+	return cpc
+}
+
 // SetReceived sets the "received" field.
 func (cpc *CheckoutProductCreate) SetReceived(b bool) *CheckoutProductCreate {
 	cpc.mutation.SetReceived(b)
@@ -279,6 +287,10 @@ func (cpc *CheckoutProductCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (cpc *CheckoutProductCreate) defaults() {
+	if _, ok := cpc.mutation.OfferPrice(); !ok {
+		v := checkoutproduct.DefaultOfferPrice
+		cpc.mutation.SetOfferPrice(v)
+	}
 	if _, ok := cpc.mutation.Received(); !ok {
 		v := checkoutproduct.DefaultReceived
 		cpc.mutation.SetReceived(v)

@@ -25,7 +25,7 @@ type SellerProductVariation struct {
 	// Quantity holds the value of the "quantity" field.
 	Quantity int `json:"quantity,omitempty"`
 	// Image holds the value of the "image" field.
-	Image int `json:"image,omitempty"`
+	Image string `json:"image,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -101,8 +101,10 @@ func (*SellerProductVariation) scanValues(columns []string) ([]interface{}, erro
 		switch columns[i] {
 		case sellerproductvariation.FieldProductPrice, sellerproductvariation.FieldSellingPrice:
 			values[i] = new(decimal.Decimal)
-		case sellerproductvariation.FieldID, sellerproductvariation.FieldQuantity, sellerproductvariation.FieldImage:
+		case sellerproductvariation.FieldID, sellerproductvariation.FieldQuantity:
 			values[i] = new(sql.NullInt64)
+		case sellerproductvariation.FieldImage:
+			values[i] = new(sql.NullString)
 		case sellerproductvariation.FieldCreatedAt, sellerproductvariation.FieldUpdatedAt, sellerproductvariation.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
 		case sellerproductvariation.ForeignKeys[0]: // seller_product_seller_product_variations
@@ -147,10 +149,10 @@ func (spv *SellerProductVariation) assignValues(columns []string, values []inter
 				spv.Quantity = int(value.Int64)
 			}
 		case sellerproductvariation.FieldImage:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field image", values[i])
 			} else if value.Valid {
-				spv.Image = int(value.Int64)
+				spv.Image = value.String
 			}
 		case sellerproductvariation.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -233,7 +235,7 @@ func (spv *SellerProductVariation) String() string {
 	builder.WriteString(", quantity=")
 	builder.WriteString(fmt.Sprintf("%v", spv.Quantity))
 	builder.WriteString(", image=")
-	builder.WriteString(fmt.Sprintf("%v", spv.Image))
+	builder.WriteString(spv.Image)
 	builder.WriteString(", created_at=")
 	builder.WriteString(spv.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", updated_at=")
