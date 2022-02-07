@@ -26,13 +26,14 @@ func authMiddleware(c *fiber.Ctx) error {
 }
 func AuthRoutes(app *fiber.App) {
 	nonAuth := app.Group("/api/auth")
+	auth := app.Group("/api/authenticate/",authMiddleware)
 	nonAuth.Get("/user", GetUser)
 	nonAuth.Get("/seller", GetSeller)
 	nonAuth.Get("/admin", GetAdmin)
 	nonAuth.Get("/user/csrf", GetCSRF)
 	nonAuth.Post("/user/register", UserRegister)
 	nonAuth.Post("/user/login", UserLogin)
-	nonAuth.Post("/user/logout", UserLogout)
+	auth.Post("/user/logout", UserLogout)
 	nonAuth.Post("/seller/register", SellerRequestPost)
 	nonAuth.Post("/seller/login", SellerLogin)
 	nonAuth.Post("/admin/login", AdminLogin)

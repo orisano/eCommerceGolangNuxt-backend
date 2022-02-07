@@ -68,4 +68,7 @@ func SellerRoutes(app *fiber.App) {
 	seller.Get("/checkout/product/details/:id",DetailsCheckoutProduct)
 
 	seller.Get("/shop/products/:shopID",AllShopProducts)
+
+	// Dashboard
+	seller.Get("/get/line/chart",GetCheckoutEveryday)
 }
