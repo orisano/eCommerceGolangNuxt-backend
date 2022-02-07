@@ -9,28 +9,33 @@ import (
 	"bongo/mynonuser"
 	"bongo/myseller"
 	//"encoding/json"
-	json "github.com/pquerna/ffjson/ffjson"
+	//json "github.com/pquerna/ffjson/ffjson"
 	//jsoniter "github.com/json-iterator/go"
 	//"github.com/goccy/go-json"
 	//json "github.com/francoispqt/gojay"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/monitor"
 	//jsoniter "github.com/json-iterator/go"
 	"log"
 	"os"
+	//_ "github.com/goccy/go-graphviz"
 )
 
 func main() {
 	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
-	//app := fiber.New().
+	app := fiber.New()
 	//json := jsoniter.ConfigCompatibleWithStandardLibrary
-	app := fiber.New(fiber.Config{
-		JSONEncoder: json.Marshal,
-		JSONDecoder: json.Unmarshal,
-	})
-	app.Get("/dashboard", monitor.New())
+	//app := fiber.New(fiber.Config{
+	//	JSONEncoder: json.Marshal,
+	//	JSONDecoder: json.Unmarshal,
+	//})
+	//app := fiber.New(fiber.Config{
+	//	JSONEncoder: json1.Parser,
+	//	JSONDecoder: json.Unmarshal,
+	//})
+
+	//app.Get("/dashboard", monitor.New())
 	model.InitDatabase()
 	db.Init()
 	app.Use(cors.New(cors.Config{
@@ -86,6 +91,7 @@ func main() {
 	//}
 
 }
+
 func dieIf(err error) {
 	if err != nil {
 		panic(err)

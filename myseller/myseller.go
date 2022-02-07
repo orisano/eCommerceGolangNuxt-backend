@@ -17,6 +17,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/go-echarts/go-echarts/v2/opts"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/nfnt/resize"
@@ -342,14 +343,6 @@ func DeleteShops(c *fiber.Ctx) error {
 // product
 
 func AllSellerProductsMin(c *fiber.Ctx) error {
-	//pg := paginate.New()
-	//var products []model.SellerProduct
-	//model.DB.Find(&products, "user_id = ?", c.Locals("AuthID"))
-	//models := model.DB.Model(&model.SellerProduct{}).Preload("SellerProductImage", "display = (?)", true).Where("user_id = ?", c.Locals("AuthID")).Where("active = ?", true)
-	//fmt.Println(models)
-	//page, _  := strconv.Atoi(c.Query("page"))
-	//size, _ := strconv.Atoi(c.Query("size"))
-
 	products, _ := db.Client.SellerProduct.Query().Where(sellerproduct.HasUserWith(user.ID(c.Locals("AuthID").(int)))).WithSellerProductImages(func(q *ent.SellerProductImageQuery) {
 		q.Where(sellerproductimage.Display(true))
 	}).WithShop().Where(sellerproduct.DeletedAtIsNil()).Where(sellerproduct.Active(true)).Order(ent.Asc(sellerproduct.FieldUpdatedAt)).Select(sellerproduct.FieldID, sellerproduct.FieldSlug, sellerproduct.FieldName, sellerproduct.FieldUpdatedAt, sellerproduct.FieldQuantity, sellerproduct.FieldProductPrice, sellerproduct.FieldSellingPrice).All(context.Background())
@@ -1337,9 +1330,9 @@ func OrderStatistic(c *fiber.Ctx) error {
 	}
 	var statistic statisticData
 	for _, product := range productOrder {
-		productTime, _ := time.Parse(product.UpdatedAt.String(), "2006-01-02")
-		currentDate, _ := time.Parse(time.Now().String(), "2006-01-02")
-		if productTime == currentDate {
+		//productTime := product.CreatedAt.Format("01-02-2006")
+		//currentDate := time.Now().Format("01-02-2006")
+		if product.CreatedAt.Format("01-02-2006") == time.Now().Format("01-02-2006") {
 			statistic.TodayIncome = statistic.TodayIncome.Add(product.SellingPrice)
 		}
 		statistic.TotalIncome = statistic.TotalIncome.Add(product.SellingPrice)
@@ -1370,10 +1363,21 @@ func AllShopProducts(c *fiber.Ctx) error {
 	shop, shopErr := db.Client.SellerShop.Query().Where(sellershop.ID(shopID)).WithSellerProducts(func(query *ent.SellerProductQuery) {
 		query.WithSellerProductImages(func(image *ent.SellerProductImageQuery) {
 			image.Where(sellerproductimage.Display(true))
-		})
+		}).Where(sellerproduct.DeletedAtIsNil()).Where(sellerproduct.Active(true)).Order(ent.Asc(sellerproduct.FieldUpdatedAt))
 	}).First(context.Background())
 	if shopErr != nil {
 		return c.SendStatus(500)
 	}
-	return c.JSON(shop)
+	return c.JSON(shop.Edges.SellerProducts)
+}
+func generateLineItems() []opts.LineData {
+	items := make([]opts.LineData, 0)
+	for i := 0; i < 7; i++ {
+		items = append(items, opts.LineData{Value: rand.Intn(300)})
+	}
+	return items
+}
+func GetCheckoutEveryday(c *fiber.Ctx) error {
+	data, _ := db.Client.CheckoutProduct.Query().Where(checkoutproduct.HasSellerWith(user.ID(c.Locals("AuthID").(int)))).All(context.Background())
+	return c.JSON(data)
 }

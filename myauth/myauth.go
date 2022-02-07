@@ -336,6 +336,11 @@ func SellerRequestPost(c *fiber.Ctx) error {
 	return c.SendStatus(200)
 }
 func UserLogout(c *fiber.Ctx) error {
-	c.ClearCookie("bongoauth")
+	c.Cookie(&fiber.Cookie{
+		Name:     "bongoauth",
+		Value:    "deleted",
+		Expires:  time.Now().Add(-(time.Hour * 2)),
+		HTTPOnly: true,
+	})
 	return c.SendStatus(200)
 }
