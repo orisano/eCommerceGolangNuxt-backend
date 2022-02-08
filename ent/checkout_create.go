@@ -247,16 +247,16 @@ func (cc *CheckoutCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (cc *CheckoutCreate) check() error {
 	if _, ok := cc.mutation.TotalPrice(); !ok {
-		return &ValidationError{Name: "total_price", err: errors.New(`ent: missing required field "total_price"`)}
+		return &ValidationError{Name: "total_price", err: errors.New(`ent: missing required field "Checkout.total_price"`)}
 	}
 	if _, ok := cc.mutation.Completed(); !ok {
-		return &ValidationError{Name: "completed", err: errors.New(`ent: missing required field "completed"`)}
+		return &ValidationError{Name: "completed", err: errors.New(`ent: missing required field "Checkout.completed"`)}
 	}
 	if _, ok := cc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Checkout.created_at"`)}
 	}
 	if _, ok := cc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Checkout.updated_at"`)}
 	}
 	return nil
 }

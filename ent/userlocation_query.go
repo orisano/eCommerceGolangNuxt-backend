@@ -482,6 +482,10 @@ func (ulq *UserLocationQuery) sqlAll(ctx context.Context) ([]*UserLocation, erro
 
 func (ulq *UserLocationQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := ulq.querySpec()
+	_spec.Node.Columns = ulq.fields
+	if len(ulq.fields) > 0 {
+		_spec.Unique = ulq.unique != nil && *ulq.unique
+	}
 	return sqlgraph.CountNodes(ctx, ulq.driver, _spec)
 }
 
@@ -552,6 +556,9 @@ func (ulq *UserLocationQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if ulq.sql != nil {
 		selector = ulq.sql
 		selector.Select(selector.Columns(columns...)...)
+	}
+	if ulq.unique != nil && *ulq.unique {
+		selector.Distinct()
 	}
 	for _, p := range ulq.predicates {
 		p(selector)
@@ -831,9 +838,7 @@ func (ulgb *UserLocationGroupBy) sqlQuery() *sql.Selector {
 		for _, f := range ulgb.fields {
 			columns = append(columns, selector.C(f))
 		}
-		for _, c := range aggregation {
-			columns = append(columns, c)
-		}
+		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
 	return selector.GroupBy(selector.Columns(ulgb.fields...)...)

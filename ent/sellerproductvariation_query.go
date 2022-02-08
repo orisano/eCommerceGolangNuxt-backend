@@ -614,6 +614,10 @@ func (spvq *SellerProductVariationQuery) sqlAll(ctx context.Context) ([]*SellerP
 
 func (spvq *SellerProductVariationQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := spvq.querySpec()
+	_spec.Node.Columns = spvq.fields
+	if len(spvq.fields) > 0 {
+		_spec.Unique = spvq.unique != nil && *spvq.unique
+	}
 	return sqlgraph.CountNodes(ctx, spvq.driver, _spec)
 }
 
@@ -684,6 +688,9 @@ func (spvq *SellerProductVariationQuery) sqlQuery(ctx context.Context) *sql.Sele
 	if spvq.sql != nil {
 		selector = spvq.sql
 		selector.Select(selector.Columns(columns...)...)
+	}
+	if spvq.unique != nil && *spvq.unique {
+		selector.Distinct()
 	}
 	for _, p := range spvq.predicates {
 		p(selector)
@@ -963,9 +970,7 @@ func (spvgb *SellerProductVariationGroupBy) sqlQuery() *sql.Selector {
 		for _, f := range spvgb.fields {
 			columns = append(columns, selector.C(f))
 		}
-		for _, c := range aggregation {
-			columns = append(columns, c)
-		}
+		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
 	return selector.GroupBy(selector.Columns(spvgb.fields...)...)

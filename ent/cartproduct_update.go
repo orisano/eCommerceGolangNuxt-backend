@@ -9,6 +9,7 @@ import (
 	"bongo/ent/sellerproduct"
 	"bongo/ent/sellerproductvariation"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -590,7 +591,7 @@ func (cpuo *CartProductUpdateOne) sqlSave(ctx context.Context) (_node *CartProdu
 	}
 	id, ok := cpuo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing CartProduct.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "CartProduct.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := cpuo.fields; len(fields) > 0 {

@@ -146,10 +146,10 @@ func (spcc *SellerProductCategoryCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (spcc *SellerProductCategoryCreate) check() error {
 	if _, ok := spcc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SellerProductCategory.created_at"`)}
 	}
 	if _, ok := spcc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "SellerProductCategory.updated_at"`)}
 	}
 	return nil
 }

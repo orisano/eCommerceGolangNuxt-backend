@@ -8,6 +8,7 @@ import (
 	"bongo/ent/shopcategory"
 	"bongo/ent/user"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -227,7 +228,7 @@ func (sru *SellerRequestUpdate) defaults() {
 func (sru *SellerRequestUpdate) check() error {
 	if v, ok := sru.mutation.ContactNumber(); ok {
 		if err := sellerrequest.ContactNumberValidator(v); err != nil {
-			return &ValidationError{Name: "contact_number", err: fmt.Errorf("ent: validator failed for field \"contact_number\": %w", err)}
+			return &ValidationError{Name: "contact_number", err: fmt.Errorf(`ent: validator failed for field "SellerRequest.contact_number": %w`, err)}
 		}
 	}
 	return nil
@@ -607,7 +608,7 @@ func (sruo *SellerRequestUpdateOne) defaults() {
 func (sruo *SellerRequestUpdateOne) check() error {
 	if v, ok := sruo.mutation.ContactNumber(); ok {
 		if err := sellerrequest.ContactNumberValidator(v); err != nil {
-			return &ValidationError{Name: "contact_number", err: fmt.Errorf("ent: validator failed for field \"contact_number\": %w", err)}
+			return &ValidationError{Name: "contact_number", err: fmt.Errorf(`ent: validator failed for field "SellerRequest.contact_number": %w`, err)}
 		}
 	}
 	return nil
@@ -626,7 +627,7 @@ func (sruo *SellerRequestUpdateOne) sqlSave(ctx context.Context) (_node *SellerR
 	}
 	id, ok := sruo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing SellerRequest.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "SellerRequest.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := sruo.fields; len(fields) > 0 {

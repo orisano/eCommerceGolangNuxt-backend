@@ -10,6 +10,7 @@ import (
 	"bongo/ent/user"
 	"bongo/ent/userlocation"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -753,7 +754,7 @@ func (cuo *CheckoutUpdateOne) sqlSave(ctx context.Context) (_node *Checkout, err
 	}
 	id, ok := cuo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Checkout.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Checkout.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := cuo.fields; len(fields) > 0 {

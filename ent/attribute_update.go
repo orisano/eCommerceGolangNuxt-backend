@@ -7,6 +7,7 @@ import (
 	"bongo/ent/predicate"
 	"bongo/ent/sellerproductvariationvalues"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -438,7 +439,7 @@ func (auo *AttributeUpdateOne) sqlSave(ctx context.Context) (_node *Attribute, e
 	}
 	id, ok := auo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Attribute.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Attribute.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := auo.fields; len(fields) > 0 {

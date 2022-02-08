@@ -208,13 +208,13 @@ func (cc *CartCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (cc *CartCreate) check() error {
 	if _, ok := cc.mutation.Slug(); !ok {
-		return &ValidationError{Name: "slug", err: errors.New(`ent: missing required field "slug"`)}
+		return &ValidationError{Name: "slug", err: errors.New(`ent: missing required field "Cart.slug"`)}
 	}
 	if _, ok := cc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Cart.created_at"`)}
 	}
 	if _, ok := cc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Cart.updated_at"`)}
 	}
 	return nil
 }

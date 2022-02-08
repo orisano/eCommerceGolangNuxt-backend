@@ -168,13 +168,13 @@ func (bc *BrandCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (bc *BrandCreate) check() error {
 	if _, ok := bc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "name"`)}
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Brand.name"`)}
 	}
 	if _, ok := bc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Brand.created_at"`)}
 	}
 	if _, ok := bc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Brand.updated_at"`)}
 	}
 	return nil
 }

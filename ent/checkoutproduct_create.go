@@ -312,25 +312,25 @@ func (cpc *CheckoutProductCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (cpc *CheckoutProductCreate) check() error {
 	if _, ok := cpc.mutation.Quantity(); !ok {
-		return &ValidationError{Name: "quantity", err: errors.New(`ent: missing required field "quantity"`)}
+		return &ValidationError{Name: "quantity", err: errors.New(`ent: missing required field "CheckoutProduct.quantity"`)}
 	}
 	if _, ok := cpc.mutation.SellingPrice(); !ok {
-		return &ValidationError{Name: "selling_price", err: errors.New(`ent: missing required field "selling_price"`)}
+		return &ValidationError{Name: "selling_price", err: errors.New(`ent: missing required field "CheckoutProduct.selling_price"`)}
 	}
 	if _, ok := cpc.mutation.OfferPrice(); !ok {
-		return &ValidationError{Name: "offer_price", err: errors.New(`ent: missing required field "offer_price"`)}
+		return &ValidationError{Name: "offer_price", err: errors.New(`ent: missing required field "CheckoutProduct.offer_price"`)}
 	}
 	if _, ok := cpc.mutation.Received(); !ok {
-		return &ValidationError{Name: "received", err: errors.New(`ent: missing required field "received"`)}
+		return &ValidationError{Name: "received", err: errors.New(`ent: missing required field "CheckoutProduct.received"`)}
 	}
 	if _, ok := cpc.mutation.Status(); !ok {
-		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "status"`)}
+		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "CheckoutProduct.status"`)}
 	}
 	if _, ok := cpc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "CheckoutProduct.created_at"`)}
 	}
 	if _, ok := cpc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "CheckoutProduct.updated_at"`)}
 	}
 	return nil
 }

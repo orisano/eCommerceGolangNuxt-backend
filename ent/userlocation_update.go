@@ -8,6 +8,7 @@ import (
 	"bongo/ent/user"
 	"bongo/ent/userlocation"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -659,7 +660,7 @@ func (uluo *UserLocationUpdateOne) sqlSave(ctx context.Context) (_node *UserLoca
 	}
 	id, ok := uluo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing UserLocation.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "UserLocation.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := uluo.fields; len(fields) > 0 {

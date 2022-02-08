@@ -212,19 +212,19 @@ func (scc *ShopCategoryCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (scc *ShopCategoryCreate) check() error {
 	if _, ok := scc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "name"`)}
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "ShopCategory.name"`)}
 	}
 	if _, ok := scc.mutation.Slug(); !ok {
-		return &ValidationError{Name: "slug", err: errors.New(`ent: missing required field "slug"`)}
+		return &ValidationError{Name: "slug", err: errors.New(`ent: missing required field "ShopCategory.slug"`)}
 	}
 	if _, ok := scc.mutation.Image(); !ok {
-		return &ValidationError{Name: "image", err: errors.New(`ent: missing required field "image"`)}
+		return &ValidationError{Name: "image", err: errors.New(`ent: missing required field "ShopCategory.image"`)}
 	}
 	if _, ok := scc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "ShopCategory.created_at"`)}
 	}
 	if _, ok := scc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "ShopCategory.updated_at"`)}
 	}
 	return nil
 }

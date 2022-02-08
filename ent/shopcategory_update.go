@@ -9,6 +9,7 @@ import (
 	"bongo/ent/sellershop"
 	"bongo/ent/shopcategory"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -730,7 +731,7 @@ func (scuo *ShopCategoryUpdateOne) sqlSave(ctx context.Context) (_node *ShopCate
 	}
 	id, ok := scuo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing ShopCategory.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "ShopCategory.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := scuo.fields; len(fields) > 0 {

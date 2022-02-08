@@ -7,6 +7,7 @@ import (
 	"bongo/ent/sellerproduct"
 	"bongo/ent/sellerproductimage"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -432,7 +433,7 @@ func (spiuo *SellerProductImageUpdateOne) sqlSave(ctx context.Context) (_node *S
 	}
 	id, ok := spiuo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing SellerProductImage.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "SellerProductImage.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := spiuo.fields; len(fields) > 0 {

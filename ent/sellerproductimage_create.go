@@ -190,16 +190,16 @@ func (spic *SellerProductImageCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (spic *SellerProductImageCreate) check() error {
 	if _, ok := spic.mutation.Display(); !ok {
-		return &ValidationError{Name: "display", err: errors.New(`ent: missing required field "display"`)}
+		return &ValidationError{Name: "display", err: errors.New(`ent: missing required field "SellerProductImage.display"`)}
 	}
 	if _, ok := spic.mutation.Image(); !ok {
-		return &ValidationError{Name: "image", err: errors.New(`ent: missing required field "image"`)}
+		return &ValidationError{Name: "image", err: errors.New(`ent: missing required field "SellerProductImage.image"`)}
 	}
 	if _, ok := spic.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SellerProductImage.created_at"`)}
 	}
 	if _, ok := spic.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "SellerProductImage.updated_at"`)}
 	}
 	return nil
 }
