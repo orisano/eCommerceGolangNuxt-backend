@@ -234,33 +234,33 @@ func (src *SellerRequestCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (src *SellerRequestCreate) check() error {
 	if _, ok := src.mutation.SellerName(); !ok {
-		return &ValidationError{Name: "seller_name", err: errors.New(`ent: missing required field "seller_name"`)}
+		return &ValidationError{Name: "seller_name", err: errors.New(`ent: missing required field "SellerRequest.seller_name"`)}
 	}
 	if _, ok := src.mutation.ShopName(); !ok {
-		return &ValidationError{Name: "shop_name", err: errors.New(`ent: missing required field "shop_name"`)}
+		return &ValidationError{Name: "shop_name", err: errors.New(`ent: missing required field "SellerRequest.shop_name"`)}
 	}
 	if _, ok := src.mutation.ContactNumber(); !ok {
-		return &ValidationError{Name: "contact_number", err: errors.New(`ent: missing required field "contact_number"`)}
+		return &ValidationError{Name: "contact_number", err: errors.New(`ent: missing required field "SellerRequest.contact_number"`)}
 	}
 	if v, ok := src.mutation.ContactNumber(); ok {
 		if err := sellerrequest.ContactNumberValidator(v); err != nil {
-			return &ValidationError{Name: "contact_number", err: fmt.Errorf(`ent: validator failed for field "contact_number": %w`, err)}
+			return &ValidationError{Name: "contact_number", err: fmt.Errorf(`ent: validator failed for field "SellerRequest.contact_number": %w`, err)}
 		}
 	}
 	if _, ok := src.mutation.ShopLocation(); !ok {
-		return &ValidationError{Name: "shop_location", err: errors.New(`ent: missing required field "shop_location"`)}
+		return &ValidationError{Name: "shop_location", err: errors.New(`ent: missing required field "SellerRequest.shop_location"`)}
 	}
 	if _, ok := src.mutation.TaxID(); !ok {
-		return &ValidationError{Name: "tax_id", err: errors.New(`ent: missing required field "tax_id"`)}
+		return &ValidationError{Name: "tax_id", err: errors.New(`ent: missing required field "SellerRequest.tax_id"`)}
 	}
 	if _, ok := src.mutation.Accepted(); !ok {
-		return &ValidationError{Name: "accepted", err: errors.New(`ent: missing required field "accepted"`)}
+		return &ValidationError{Name: "accepted", err: errors.New(`ent: missing required field "SellerRequest.accepted"`)}
 	}
 	if _, ok := src.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SellerRequest.created_at"`)}
 	}
 	if _, ok := src.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "SellerRequest.updated_at"`)}
 	}
 	return nil
 }

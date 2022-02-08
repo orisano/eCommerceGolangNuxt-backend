@@ -9,6 +9,7 @@ import (
 	"bongo/ent/predicate"
 	"bongo/ent/user"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -610,7 +611,7 @@ func (cuo *CartUpdateOne) sqlSave(ctx context.Context) (_node *Cart, err error) 
 	}
 	id, ok := cuo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Cart.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Cart.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := cuo.fields; len(fields) > 0 {

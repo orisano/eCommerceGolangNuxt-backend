@@ -224,31 +224,31 @@ func (ulc *UserLocationCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (ulc *UserLocationCreate) check() error {
 	if _, ok := ulc.mutation.Area(); !ok {
-		return &ValidationError{Name: "area", err: errors.New(`ent: missing required field "area"`)}
+		return &ValidationError{Name: "area", err: errors.New(`ent: missing required field "UserLocation.area"`)}
 	}
 	if _, ok := ulc.mutation.Street(); !ok {
-		return &ValidationError{Name: "street", err: errors.New(`ent: missing required field "street"`)}
+		return &ValidationError{Name: "street", err: errors.New(`ent: missing required field "UserLocation.street"`)}
 	}
 	if _, ok := ulc.mutation.House(); !ok {
-		return &ValidationError{Name: "house", err: errors.New(`ent: missing required field "house"`)}
+		return &ValidationError{Name: "house", err: errors.New(`ent: missing required field "UserLocation.house"`)}
 	}
 	if _, ok := ulc.mutation.PostOffice(); !ok {
-		return &ValidationError{Name: "post_office", err: errors.New(`ent: missing required field "post_office"`)}
+		return &ValidationError{Name: "post_office", err: errors.New(`ent: missing required field "UserLocation.post_office"`)}
 	}
 	if _, ok := ulc.mutation.PostCode(); !ok {
-		return &ValidationError{Name: "post_code", err: errors.New(`ent: missing required field "post_code"`)}
+		return &ValidationError{Name: "post_code", err: errors.New(`ent: missing required field "UserLocation.post_code"`)}
 	}
 	if _, ok := ulc.mutation.PoliceStation(); !ok {
-		return &ValidationError{Name: "police_station", err: errors.New(`ent: missing required field "police_station"`)}
+		return &ValidationError{Name: "police_station", err: errors.New(`ent: missing required field "UserLocation.police_station"`)}
 	}
 	if _, ok := ulc.mutation.City(); !ok {
-		return &ValidationError{Name: "city", err: errors.New(`ent: missing required field "city"`)}
+		return &ValidationError{Name: "city", err: errors.New(`ent: missing required field "UserLocation.city"`)}
 	}
 	if _, ok := ulc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "UserLocation.created_at"`)}
 	}
 	if _, ok := ulc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "UserLocation.updated_at"`)}
 	}
 	return nil
 }

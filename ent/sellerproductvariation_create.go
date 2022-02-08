@@ -239,22 +239,22 @@ func (spvc *SellerProductVariationCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (spvc *SellerProductVariationCreate) check() error {
 	if _, ok := spvc.mutation.ProductPrice(); !ok {
-		return &ValidationError{Name: "product_price", err: errors.New(`ent: missing required field "product_price"`)}
+		return &ValidationError{Name: "product_price", err: errors.New(`ent: missing required field "SellerProductVariation.product_price"`)}
 	}
 	if _, ok := spvc.mutation.SellingPrice(); !ok {
-		return &ValidationError{Name: "selling_price", err: errors.New(`ent: missing required field "selling_price"`)}
+		return &ValidationError{Name: "selling_price", err: errors.New(`ent: missing required field "SellerProductVariation.selling_price"`)}
 	}
 	if _, ok := spvc.mutation.Quantity(); !ok {
-		return &ValidationError{Name: "quantity", err: errors.New(`ent: missing required field "quantity"`)}
+		return &ValidationError{Name: "quantity", err: errors.New(`ent: missing required field "SellerProductVariation.quantity"`)}
 	}
 	if _, ok := spvc.mutation.Image(); !ok {
-		return &ValidationError{Name: "image", err: errors.New(`ent: missing required field "image"`)}
+		return &ValidationError{Name: "image", err: errors.New(`ent: missing required field "SellerProductVariation.image"`)}
 	}
 	if _, ok := spvc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SellerProductVariation.created_at"`)}
 	}
 	if _, ok := spvc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "SellerProductVariation.updated_at"`)}
 	}
 	return nil
 }

@@ -8,6 +8,7 @@ import (
 	"bongo/ent/sellerproductvariation"
 	"bongo/ent/sellerproductvariationvalues"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -502,7 +503,7 @@ func (spvvuo *SellerProductVariationValuesUpdateOne) sqlSave(ctx context.Context
 	}
 	id, ok := spvvuo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing SellerProductVariationValues.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "SellerProductVariationValues.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := spvvuo.fields; len(fields) > 0 {

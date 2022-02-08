@@ -613,6 +613,10 @@ func (ssq *SellerShopQuery) sqlAll(ctx context.Context) ([]*SellerShop, error) {
 
 func (ssq *SellerShopQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := ssq.querySpec()
+	_spec.Node.Columns = ssq.fields
+	if len(ssq.fields) > 0 {
+		_spec.Unique = ssq.unique != nil && *ssq.unique
+	}
 	return sqlgraph.CountNodes(ctx, ssq.driver, _spec)
 }
 
@@ -683,6 +687,9 @@ func (ssq *SellerShopQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if ssq.sql != nil {
 		selector = ssq.sql
 		selector.Select(selector.Columns(columns...)...)
+	}
+	if ssq.unique != nil && *ssq.unique {
+		selector.Distinct()
 	}
 	for _, p := range ssq.predicates {
 		p(selector)
@@ -962,9 +969,7 @@ func (ssgb *SellerShopGroupBy) sqlQuery() *sql.Selector {
 		for _, f := range ssgb.fields {
 			columns = append(columns, selector.C(f))
 		}
-		for _, c := range aggregation {
-			columns = append(columns, c)
-		}
+		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
 	return selector.GroupBy(selector.Columns(ssgb.fields...)...)

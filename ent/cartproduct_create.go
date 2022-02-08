@@ -212,13 +212,13 @@ func (cpc *CartProductCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (cpc *CartProductCreate) check() error {
 	if _, ok := cpc.mutation.Quantity(); !ok {
-		return &ValidationError{Name: "quantity", err: errors.New(`ent: missing required field "quantity"`)}
+		return &ValidationError{Name: "quantity", err: errors.New(`ent: missing required field "CartProduct.quantity"`)}
 	}
 	if _, ok := cpc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "CartProduct.created_at"`)}
 	}
 	if _, ok := cpc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "CartProduct.updated_at"`)}
 	}
 	return nil
 }

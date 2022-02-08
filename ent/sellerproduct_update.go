@@ -14,6 +14,7 @@ import (
 	"bongo/ent/sellershop"
 	"bongo/ent/user"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -1647,7 +1648,7 @@ func (spuo *SellerProductUpdateOne) sqlSave(ctx context.Context) (_node *SellerP
 	}
 	id, ok := spuo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing SellerProduct.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "SellerProduct.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := spuo.fields; len(fields) > 0 {

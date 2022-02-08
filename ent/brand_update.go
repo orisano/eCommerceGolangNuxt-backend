@@ -7,6 +7,7 @@ import (
 	"bongo/ent/predicate"
 	"bongo/ent/sellerproduct"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -438,7 +439,7 @@ func (buo *BrandUpdateOne) sqlSave(ctx context.Context) (_node *Brand, err error
 	}
 	id, ok := buo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Brand.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Brand.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := buo.fields; len(fields) > 0 {

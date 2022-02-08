@@ -341,6 +341,10 @@ func (spcq *SellerProductCategoryQuery) sqlAll(ctx context.Context) ([]*SellerPr
 
 func (spcq *SellerProductCategoryQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := spcq.querySpec()
+	_spec.Node.Columns = spcq.fields
+	if len(spcq.fields) > 0 {
+		_spec.Unique = spcq.unique != nil && *spcq.unique
+	}
 	return sqlgraph.CountNodes(ctx, spcq.driver, _spec)
 }
 
@@ -411,6 +415,9 @@ func (spcq *SellerProductCategoryQuery) sqlQuery(ctx context.Context) *sql.Selec
 	if spcq.sql != nil {
 		selector = spcq.sql
 		selector.Select(selector.Columns(columns...)...)
+	}
+	if spcq.unique != nil && *spcq.unique {
+		selector.Distinct()
 	}
 	for _, p := range spcq.predicates {
 		p(selector)
@@ -690,9 +697,7 @@ func (spcgb *SellerProductCategoryGroupBy) sqlQuery() *sql.Selector {
 		for _, f := range spcgb.fields {
 			columns = append(columns, selector.C(f))
 		}
-		for _, c := range aggregation {
-			columns = append(columns, c)
-		}
+		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
 	return selector.GroupBy(selector.Columns(spcgb.fields...)...)

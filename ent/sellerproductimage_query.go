@@ -415,6 +415,10 @@ func (spiq *SellerProductImageQuery) sqlAll(ctx context.Context) ([]*SellerProdu
 
 func (spiq *SellerProductImageQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := spiq.querySpec()
+	_spec.Node.Columns = spiq.fields
+	if len(spiq.fields) > 0 {
+		_spec.Unique = spiq.unique != nil && *spiq.unique
+	}
 	return sqlgraph.CountNodes(ctx, spiq.driver, _spec)
 }
 
@@ -485,6 +489,9 @@ func (spiq *SellerProductImageQuery) sqlQuery(ctx context.Context) *sql.Selector
 	if spiq.sql != nil {
 		selector = spiq.sql
 		selector.Select(selector.Columns(columns...)...)
+	}
+	if spiq.unique != nil && *spiq.unique {
+		selector.Distinct()
 	}
 	for _, p := range spiq.predicates {
 		p(selector)
@@ -764,9 +771,7 @@ func (spigb *SellerProductImageGroupBy) sqlQuery() *sql.Selector {
 		for _, f := range spigb.fields {
 			columns = append(columns, selector.C(f))
 		}
-		for _, c := range aggregation {
-			columns = append(columns, c)
-		}
+		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
 	return selector.GroupBy(selector.Columns(spigb.fields...)...)

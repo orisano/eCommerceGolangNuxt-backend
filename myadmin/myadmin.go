@@ -139,15 +139,16 @@ func CreateShopCategory(c *fiber.Ctx) error {
 	}
 	if err != nil {
 		log.Println("image upload error --> ", err)
-		return c.JSON(fiber.Map{"status": 500, "message": "Server error", "data": nil})
+		return c.Status(500).SendString("Server error. Try again.")
 	}
 	uniqueId := uuid.New()
 	filename := strings.Replace(uniqueId.String(), "-", "", -1)
 	fileExt := strings.Split(file.Filename, ".")[1]
 	imageName := fmt.Sprintf("%s.%s", filename, fileExt)
 	for {
-		var count int64
-		model.DB.Model(&model.ShopCategory{}).Where("image = ?", imageName).Count(&count)
+		//var count int64
+		count, _ := db.Client.ShopCategory.Query().Where(shopcategory.Image(imageName)).Count(context.Background())
+		//model.DB.Model(&model.ShopCategory{}).Where("image = ?", imageName).Count(&count)
 		if count > 0 {
 			uniqueId := uuid.New()
 			filename := strings.Replace(uniqueId.String(), "-", "", -1)
@@ -165,34 +166,37 @@ func CreateShopCategory(c *fiber.Ctx) error {
 	m := resize.Resize(945, 410, CusImage, resize.Lanczos3)
 	out, errCreate := os.Create(fmt.Sprintf("./public/images/%s", imageName))
 	if errCreate != nil {
-		return c.JSON(fiber.Map{"status": 500, "message": "Server error", "data": nil})
+		return c.Status(500).SendString("Server error. Try again.")
 	}
 	defer out.Close()
-	jpeg.Encode(out, m, nil)
+	EncodeError := jpeg.Encode(out, m, nil)
+	if EncodeError != nil {
+		return EncodeError
+	}
 	type tempStruct struct {
 		Name  string `json:"name"`
 		Slug  string `json:"slug"`
 		Image string `json:"image"`
 	}
-	category := new(tempStruct)
-	if err := c.BodyParser(category); err != nil {
+	Category := new(tempStruct)
+	if err := c.BodyParser(Category); err != nil {
 		return c.Status(500).SendString("Server error. Try again.")
 	}
-	category.Image = imageName
-	category.Slug = category.Name
+	Category.Image = imageName
+	Category.Slug = Category.Name
 	for {
-		count, _ := db.Client.ShopCategory.Query().Where(shopcategory.Slug(category.Slug)).Where(shopcategory.DeletedAtIsNil()).Count(context.Background())
+		count, _ := db.Client.ShopCategory.Query().Where(shopcategory.Slug(Category.Slug)).Where(shopcategory.DeletedAtIsNil()).Count(context.Background())
 		//var count int64
 		//model.DB.Model(&model.ShopCategory{}).Where("slug = ?", category.Slug).Count(&count)
 		if count > 0 {
-			category.Slug = fmt.Sprintf("%s-%d", category.Slug, rand.Intn(9999))
+			Category.Slug = fmt.Sprintf("%s-%d", Category.Slug, rand.Intn(9999))
 		} else {
 			break
 		}
 	}
-	save, myError := db.Client.ShopCategory.Create().SetSlug(category.Slug).SetName(category.Name).SetImage(category.Image).Save(context.Background())
+	save, myError := db.Client.ShopCategory.Create().SetSlug(Category.Slug).SetName(Category.Name).SetImage(Category.Image).Save(context.Background())
 	if myError != nil {
-		os.Remove("./public/images/" + category.Image)
+		os.Remove("./public/images/" + Category.Image)
 		return c.SendStatus(fiber.StatusForbidden)
 	}
 	return c.Status(fiber.StatusCreated).JSON(save)
@@ -703,7 +707,7 @@ func BrandEdit(c *fiber.Ctx) error {
 	if brandInstance.Name != "" {
 		fmt.Println("1")
 		brandID, _ := strconv.Atoi(c.Params("id"))
-		brandOj , brandOjErr := db.Client.Brand.Get(context.Background(),brandID)
+		brandOj, brandOjErr := db.Client.Brand.Get(context.Background(), brandID)
 		fmt.Println("1")
 		if brandOjErr != nil {
 			return c.SendStatus(500)

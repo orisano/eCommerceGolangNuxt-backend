@@ -678,6 +678,10 @@ func (cpq *CheckoutProductQuery) sqlAll(ctx context.Context) ([]*CheckoutProduct
 
 func (cpq *CheckoutProductQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := cpq.querySpec()
+	_spec.Node.Columns = cpq.fields
+	if len(cpq.fields) > 0 {
+		_spec.Unique = cpq.unique != nil && *cpq.unique
+	}
 	return sqlgraph.CountNodes(ctx, cpq.driver, _spec)
 }
 
@@ -748,6 +752,9 @@ func (cpq *CheckoutProductQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if cpq.sql != nil {
 		selector = cpq.sql
 		selector.Select(selector.Columns(columns...)...)
+	}
+	if cpq.unique != nil && *cpq.unique {
+		selector.Distinct()
 	}
 	for _, p := range cpq.predicates {
 		p(selector)
@@ -1027,9 +1034,7 @@ func (cpgb *CheckoutProductGroupBy) sqlQuery() *sql.Selector {
 		for _, f := range cpgb.fields {
 			columns = append(columns, selector.C(f))
 		}
-		for _, c := range aggregation {
-			columns = append(columns, c)
-		}
+		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
 	return selector.GroupBy(selector.Columns(cpgb.fields...)...)

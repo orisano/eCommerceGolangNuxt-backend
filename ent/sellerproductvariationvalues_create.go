@@ -198,16 +198,16 @@ func (spvvc *SellerProductVariationValuesCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (spvvc *SellerProductVariationValuesCreate) check() error {
 	if _, ok := spvvc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "name"`)}
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "SellerProductVariationValues.name"`)}
 	}
 	if _, ok := spvvc.mutation.Description(); !ok {
-		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "description"`)}
+		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "SellerProductVariationValues.description"`)}
 	}
 	if _, ok := spvvc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SellerProductVariationValues.created_at"`)}
 	}
 	if _, ok := spvvc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "SellerProductVariationValues.updated_at"`)}
 	}
 	return nil
 }
