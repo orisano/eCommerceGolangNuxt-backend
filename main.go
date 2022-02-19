@@ -2,40 +2,28 @@ package main
 
 // go:generate sqlboiler --wipe postgres
 import (
+	"log"
+	"os"
+
 	"bongo/db"
 	"bongo/myadmin"
 	"bongo/myauth"
 	"bongo/mynonuser"
 	"bongo/myseller"
-	//"encoding/json"
-	json "github.com/pquerna/ffjson/ffjson"
-	//jsoniter "github.com/json-iterator/go"
-	//"github.com/goccy/go-json"
-	//json "github.com/francoispqt/gojay"
+
+	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	//jsoniter "github.com/json-iterator/go"
-	"log"
-	"os"
-	//_ "github.com/goccy/go-graphviz"
+	"github.com/gofiber/fiber/v2/middleware/pprof"
 )
 
 func main() {
-	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
-	//app := fiber.New()
-	//json := jsoniter.ConfigCompatibleWithStandardLibrary
 	app := fiber.New(fiber.Config{
 		JSONEncoder: json.Marshal,
 		JSONDecoder: json.Unmarshal,
 	})
-	//app := fiber.New(fiber.Config{
-	//	JSONEncoder: json1.Parser,
-	//	JSONDecoder: json.Unmarshal,
-	//})
-
-	//app.Get("/dashboard", monitor.New())
-	//model.InitDatabase()
+	app.Use(pprof.New())
 	db.Init()
 	app.Use(cors.New(cors.Config{
 		AllowCredentials: true,
